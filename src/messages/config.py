@@ -1,0 +1,5 @@
+
+
+MESSAGE_MAX_LENGTH: int = 1024
+MAX_SENT_MESSAGES: int = 25
+

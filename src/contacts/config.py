@@ -1,0 +1,3 @@
+
+
+CANDIDATES_LIMIT: int = 10
