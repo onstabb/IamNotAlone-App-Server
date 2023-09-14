@@ -14,14 +14,14 @@ router: APIRouter = APIRouter(tags=['auth'])
 
 
 @router.post("/signup", response_model=SmsConfirmationDataOut)
-def sign_up(data: SignUpDataIn, accept_language: str = Header(default="en", max_length=2, example="uk")):
+def sign_up(data: SignUpDataIn, accept_language: str = Header(default="en", max_length=2, examples=["uk", "en", "pl"])):
     expires_at = TelesignService.send_sms_verification(data.phone_number, accept_language)
     return SmsConfirmationDataOut(sms_expires_at=expires_at)
 
 
 @router.post("/confirm-sms", response_model=TokenDataOut)
 def confirm_sms(data: SmsConfirmationDataIn):
-    if not TelesignService.verify_code(data.phone_number, data.sms_code):
+    if not TelesignService.verify_code_and_clear(data.phone_number, data.sms_code):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'SMS-code is invalid')
 
     generated_password: str = build_password()

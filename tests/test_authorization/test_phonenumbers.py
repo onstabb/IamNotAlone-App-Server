@@ -2,7 +2,7 @@ import pytest
 
 import pydantic
 
-from src.authorization.mobilephonenumber import MobilePhoneNumber
+from authorization.mobilephonenumber import MobilePhoneNumber
 
 
 MobilePhoneNumberAdapter = pydantic.TypeAdapter(MobilePhoneNumber)
@@ -36,6 +36,6 @@ def test_incorrect_phone_number_format(number: str):
     try:
         MobilePhoneNumberAdapter.validate_python(number)
     except pydantic.ValidationError:
-        return True
+        return
     else:
         raise AssertionError("Format must not be validated!")

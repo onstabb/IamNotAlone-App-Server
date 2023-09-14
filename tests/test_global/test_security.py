@@ -9,6 +9,7 @@ from src import security
 def get_datetime_from_now(delta_days: int) -> datetime:
     return datetime.now(pytz.utc) + timedelta(days=delta_days)
 
+
 @pytest.mark.parametrize(
     "subject,expires_at",
     [

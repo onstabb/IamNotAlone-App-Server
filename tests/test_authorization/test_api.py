@@ -1,12 +1,11 @@
 import pytest
 
-from src.authorization.smsservice.baseservice import BaseSmsService
-from tests.factories.generators import generate_random_mobile_number
+from factories.generators import generate_random_mobile_number
 
 
-@pytest.fixture(scope="module")
-def generated_phone_number():
-    return generate_random_mobile_number()
+@pytest.fixture()
+def generated_phone_number(factory_random):
+    return generate_random_mobile_number(factory_random.randgen)
 
 
 def test_signup(client, generated_phone_number):
@@ -17,21 +16,24 @@ def test_signup(client, generated_phone_number):
     assert data.get("sms_expires_at")
 
 
+
 def test_confirm_sms(client, generated_phone_number):
+    from src.authorization.smsservice.baseservice import BaseSmsService
 
+    BaseSmsService.send_sms_verification(generated_phone_number, 'uk')
 
-    code = BaseSmsService.get_code(generated_phone_number)  # "Received the code"
+    code = BaseSmsService.get_code(generated_phone_number)
     prepared_data = {"phone_number": generated_phone_number, "sms_code": code}
-    data_response = client.post("/api/v1/confirm-sms", json=prepared_data).json()
-
+    response = client.post("/api/v1/confirm-sms", json=prepared_data)
+    data_response = response.json()
     new_password = data_response.get("new_password")
+
+    assert response.status_code == 200
     assert data_response.get("access_token")
     assert new_password
 
-    client.new_password = new_password
-
-
 def test_incorrect_login(client, generated_phone_number):
+
     password = "incorrect"
     response = client.post(
         "/api/v1/login", json={"phone_number": generated_phone_number, "password": password}
@@ -39,8 +41,11 @@ def test_incorrect_login(client, generated_phone_number):
     assert response.status_code == 401
 
 
-def test_login(client, generated_phone_number):
-    password = getattr(client, "new_password")
+def test_login(client, generated_phone_number, user_factory):
+    from authorization.password import get_password_hash, build_password
+    password = build_password()
+    user_factory.create(phone_number=generated_phone_number, password=get_password_hash(password))
+
     response = client.post(
         "/api/v1/login", json={"phone_number": generated_phone_number, "password": password}
     )
@@ -48,3 +53,5 @@ def test_login(client, generated_phone_number):
 
     assert response.status_code == 200
     assert response_data.get("access_token")
+
+

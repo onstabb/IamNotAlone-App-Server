@@ -48,7 +48,7 @@ class BaseSmsService(ABC):
         return expires_at
 
     @classmethod
-    def verify_code(cls, phone_number: MobilePhoneNumber, code: SmsCode) -> bool:
+    def verify_code_and_clear(cls, phone_number: MobilePhoneNumber, code: SmsCode) -> bool:
 
         verifying_code: SmsCode = cls._storage.get(phone_number, "")
         if verifying_code != code:
