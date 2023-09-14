@@ -33,8 +33,8 @@ def edit_profile(profile_data: PrivateProfileIn, user: User = Depends(get_unbann
         file_token = file_helpers.get_image_filename_from_url(photo_url)
         user_id, _created_at = file_helpers.file_token_decode(file_token)
 
-        if file_service.image_exists(file_token):
-            return HTTPException(
+        if not file_service.image_exists(photo_url):
+            raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=f"Image {file_token} does not exists"
             )

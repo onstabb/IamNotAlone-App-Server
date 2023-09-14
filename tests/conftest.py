@@ -1,8 +1,8 @@
 import os
 import shutil
-from datetime import datetime, timedelta
 
 import pytest
+from fastapi import UploadFile
 from fastapi.testclient import TestClient
 from mongomock import MongoClient
 
@@ -37,11 +37,11 @@ def factory_random(seed):
 @pytest.fixture(scope="session")
 def file_conf():
     storage_dir = os.path.join(DATA_DIR, "Image Storage")
-    os.mkdir(storage_dir)
+    if not os.path.exists(storage_dir):
+        os.mkdir(storage_dir)
     file_config.IMAGE_FILES_LOCAL_PATH = storage_dir
     yield
     shutil.rmtree(storage_dir)
-
 
 
 @pytest.fixture(scope="session")
@@ -89,25 +89,35 @@ def user_factory(db_config, city_db):
 
 
 @pytest.fixture(scope="session")
-def authorization_user_only(user_factory):
+def _prepare_test_user_auth(user_factory):
     user = user_factory.create(profile=None)
+
     headers = {
         "Authorization": f"Bearer {security.create_access_token(user.id, security.get_token_expiration_from_now())}"
     }
-    yield headers
+    yield headers, user
+
 
 @pytest.fixture(scope="session")
-def authorization(user_factory):
-    user = user_factory.create()
-    headers = {
-        "Authorization": f"Bearer {security.create_access_token(user.id, security.get_token_expiration_from_now())}"
-    }
+def authorization_user_only(_prepare_test_user_auth):
+    headers, user = _prepare_test_user_auth
     yield headers
 
 
+@pytest.fixture(scope="session")
+def user_image_url(_prepare_test_user_auth):
+    headers, user = _prepare_test_user_auth
+    filename = "Test2.png"
+    upload_file = UploadFile(open(os.path.join(DATA_DIR, "images", filename), "rb"), filename=filename,)
+    token = file_service.save_image_and_create_token(upload_file, user.id)
+    yield f"{file_config.SERVER_STATIC_URL}/{token}"
 
 
-
-
-
-
+@pytest.fixture(scope="session")
+def authorization(_prepare_test_user):
+    from factories.factories import ProfileFactory
+    headers, user = _prepare_test_user
+    profile = ProfileFactory.create()
+    user.profile = profile
+    user.save()
+    yield headers

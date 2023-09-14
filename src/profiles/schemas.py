@@ -27,12 +27,12 @@ class _ProfileOutBase(_ProfileBase):
     id: PydanticObjectId = Field(validation_alias=AliasChoices("id", "_id"))
     photo_urls: list[HttpUrl]
     current_city_id: int | CityGeonames = Field(validation_alias="current_city")
-    native_city_id: int | CityGeonames = Field(validation_alias="native_city")
+    native_city_id: int | None | CityGeonames = Field(validation_alias="native_city")
 
 
 class PrivateProfileIn(_ProfileBase):
     birthday: DateOfBirth
-    coordinates: GeoPointType | None
+    coordinates: GeoPointType | None = None
     photo_urls: conlist(ImageUrl, max_length=model_config.MAX_PROFILE_PHOTOS, min_length=1)
     current_city: CityGeonames = Field(
         serialization_alias="current_city_id",
@@ -40,7 +40,8 @@ class PrivateProfileIn(_ProfileBase):
     )
     native_city: CityGeonames | None = Field(
         serialization_alias="native_city_id",
-        validation_alias=AliasChoices("native_city_id", "native_city")
+        validation_alias=AliasChoices("native_city_id", "native_city"),
+        default=None
     )
 
 

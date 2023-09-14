@@ -8,7 +8,7 @@ from PIL import Image, UnidentifiedImageError
 from fastapi import UploadFile
 
 from files import config
-from files.helpers import get_image_filename_from_url
+from files.helpers import get_image_filename_from_url, file_token_create
 
 
 if typing.TYPE_CHECKING:
@@ -77,19 +77,19 @@ def image_compress(image_filename: str) -> None:
     original_image.close()
 
 
-def save_upload_file(upload_file: UploadFile, destination: Path) -> None:
+def save_upload_file(file: typing.BinaryIO, destination: Path) -> None:
     try:
         with destination.open("wb") as buffer:
-            shutil.copyfileobj(upload_file.file, buffer)
+            shutil.copyfileobj(file, buffer)
     finally:
-        upload_file.file.close()
+        file.close()
 
 
-def save_image(upload_file: UploadFile, token: str) -> str:
-    image_url = token
+def save_image_and_create_token(upload_file: UploadFile, subject: str) -> str:
+    image_url = file_token_create(str(subject))
     filename = f'{image_url}.{upload_file.filename.split(".")[-1]}'
     destination = Path(os.path.join(config.IMAGE_FILES_LOCAL_PATH, filename))
-    save_upload_file(upload_file, destination)
+    save_upload_file(upload_file.file, destination)
     return filename
 
 
