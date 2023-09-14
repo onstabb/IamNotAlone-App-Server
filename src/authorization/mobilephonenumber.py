@@ -3,9 +3,7 @@ from typing import Annotated
 from phonenumbers import (
     parse, NumberParseException, format_number, number_type, PhoneNumberFormat, is_valid_number, PhoneNumberType
 )
-from pydantic import AfterValidator, constr
-
-from src.authorization import config
+from pydantic import AfterValidator
 
 
 def validate_mobile_phone_number(value: str) -> str:
@@ -24,6 +22,7 @@ def validate_mobile_phone_number(value: str) -> str:
 
 
 MobilePhoneNumber = Annotated[str, AfterValidator(validate_mobile_phone_number)]
-SmsCode = constr(max_length=config.SMS_GENERATED_CODE_LENGTH, min_length=config.SMS_GENERATED_CODE_LENGTH)
+
+
 
 

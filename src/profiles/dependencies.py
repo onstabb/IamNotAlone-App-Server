@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, status
 
 from src.authorization.dependencies import get_unbanned_user
 from src.authorization.models import User
-from src.dateutil import get_aware_datetime_now
+from src.datehelpers import get_aware_datetime_now
 from src.profiles.models import Profile
 from src.models import PydanticObjectId
 from src.profiles import service

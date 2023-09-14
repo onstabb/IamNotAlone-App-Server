@@ -2,7 +2,7 @@ from datetime import datetime
 
 from mongoengine import StringField, DateField, EnumField, ReferenceField, ListField, BooleanField, DateTimeField
 
-from src.dateutil import get_aware_datetime_now
+from src.datehelpers import get_aware_datetime_now
 from src.profiles.enums import Gender, ResidencePlan, ResidenceLength
 from src.models import BaseDocument, LocationPointMixin
 

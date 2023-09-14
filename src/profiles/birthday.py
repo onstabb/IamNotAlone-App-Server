@@ -6,7 +6,7 @@ from typing import Annotated
 from pydantic import PastDate, AfterValidator, BeforeValidator, PositiveInt
 from pydantic_core import PydanticCustomError
 
-from src.dateutil import get_age
+from src.datehelpers import get_age
 from src.profiles import config
 
 
@@ -18,14 +18,11 @@ def validate_birthday(value: date) -> date:
     return value
 
 
-def _validate_age(value: int | date) -> int:
-
+def validate_age(value: int | date) -> int:
     if isinstance(value, date):
         return get_age(value)
-
     return value
 
 
 DateOfBirth = Annotated[PastDate, AfterValidator(validate_birthday)]
-Age = Annotated[PositiveInt, BeforeValidator(_validate_age)]
-
+Age = Annotated[PositiveInt, BeforeValidator(validate_age)]

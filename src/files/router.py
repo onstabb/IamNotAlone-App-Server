@@ -1,11 +1,10 @@
 from fastapi import APIRouter, UploadFile, Depends, HTTPException, status
 
 from src.authorization.dependencies import get_unbanned_user
-from profiles import config as database_config
-from authorization.models import User
-
+from src.authorization.models import User
 from src.files.dependencies import upload_photo
-from src.files.types import ImageHttpUrl
+from src.files.imageurl import ImageUrl
+from src.profiles import config as database_config
 
 router = APIRouter(tags=['files'], prefix="/files")
 
@@ -15,12 +14,12 @@ upload_photos_responses = upload_photo_responses.copy()
 upload_photos_responses[413] = {"error": "Too many files"}
 
 
-@router.post("/photo", responses=upload_photo_responses, response_model=ImageHttpUrl)
+@router.post("/photo", responses=upload_photo_responses, response_model=ImageUrl)
 def upload_one_photo(image_url: str = Depends(upload_photo)):
     return image_url
 
 
-@router.post("/photos", responses=upload_photos_responses, response_model=list[ImageHttpUrl])
+@router.post("/photos", responses=upload_photos_responses, response_model=list[ImageUrl])
 def upload_photos(photos: list[UploadFile], user: User = Depends(get_unbanned_user)):
 
     if len(photos) > database_config.MAX_PROFILE_PHOTOS:

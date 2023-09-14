@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.dateutil import get_aware_datetime_now
+from src.datehelpers import get_aware_datetime_now
 from src.events import service
 from src.events.schemas import EventOut
 from src.profiles import dependencies as profile_dependencies

@@ -11,5 +11,3 @@ SMS_API_KEY: str = os.getenv(
     "SMS_API_KEY", "J3rfe+DZA9NZxA05JMrgufLUJVqpXh1dNytAqmgq4nOsI2POWX26Pse1wvYhUbgqh1NbF+mlPt46CkhUZMhe5A=="
 )
 SMS_GENERATED_CODE_LENGTH: int = 5
-
-

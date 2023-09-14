@@ -1,4 +1,4 @@
-__all__ = ('CityGeonames', 'CityRow')
+__all__ = ('CityGeonames',)
 
 from typing import Any, Callable, Annotated
 
@@ -6,18 +6,18 @@ from pydantic import GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
-from src.geodata.database import GeoNamesSqlite
-from src.geodata.basetypes import CityRow
+from src.geodata.cityrow import CityRow
+from src.geodata.database import geonames_db
 
 
-# FIXME: Maybe there should be two different types for model in and out
+
+# Maybe there should be two different types for model in and out
 class _CityPydanticAnnotation:
 
     @classmethod
     def validate_from_int(cls, value: int) -> CityRow:
-        geodata: GeoNamesSqlite = GeoNamesSqlite.get_instance()
 
-        city_row: CityRow | None = geodata.get_city(value)
+        city_row: CityRow | None = geonames_db.get_city(value)
         if not city_row:
             raise ValueError(f"City with geonameid {value} doesn't exists")
         return city_row

@@ -4,7 +4,7 @@ from typing import Annotated
 from pydantic import HttpUrl, AfterValidator
 
 from src import config as global_config
-from src.files import config, service
+from src.files import config
 
 
 def validate(url: HttpUrl) -> HttpUrl:
@@ -17,22 +17,7 @@ def validate(url: HttpUrl) -> HttpUrl:
     if path_split[0] != config.IMAGE_FILES_PATH:
         raise ValueError("incorrect image files path")
 
-    if not service.image_exists(url):
-        raise ValueError(f'image does not exists')
-
     return url
 
 
-ImageHttpUrl = Annotated[HttpUrl, AfterValidator(validate)]
-
-
-if __name__ == '__main__':
-
-    from pydantic import BaseModel
-
-    class Image(BaseModel):
-        url: ImageHttpUrl
-
-
-    image = Image(url="http://127.0.0.1/static/images/d2d2f3d.jpg", )
-    print(image.url)
+ImageUrl = Annotated[HttpUrl, AfterValidator(validate)]

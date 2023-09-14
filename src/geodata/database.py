@@ -1,9 +1,11 @@
+__all__ = ("geonames_db",)
+
 from sqlite3 import connect, Connection, Cursor
 
 from src import config
 from src.geodata import helpers
-from src.geodata.basetypes import CityRow, GeoPoint
-from src.singleton import SingletonBehavior
+from src.geodata.geopoint import GeoPoint
+from geodata.cityrow import CityRow
 
 
 def _convert_row(_cursor: Cursor, row: tuple) -> CityRow | int:
@@ -16,7 +18,7 @@ def _convert_row(_cursor: Cursor, row: tuple) -> CityRow | int:
     return CityRow(**data)
 
 
-class GeoNamesSqlite(SingletonBehavior):
+class GeoNamesSqlite:
 
     _SELECT_NEAREST_CITY = """
 SELECT DISTINCT
@@ -33,7 +35,7 @@ JOIN
 JOIN
     country ON administrative_unit.country_id = country.id
 ORDER BY 
-    DISTANCE(city.longitude, city.latitude, ?, ?) 
+    DISTANCE(city.longitude, city.latitude, ?, ?)  
 LIMIT ?
     
     """
@@ -98,12 +100,15 @@ GROUP BY
     city.geonameid
     """
 
-    def __init__(self, data_source: str = config.DB_GEONAMES_DATA_SOURCE) -> None:
-        self.__conn: Connection = connect(data_source,  check_same_thread=False)
+    def __init__(self) -> None:
+        self.__conn: Connection | None = None
+        self.__cursor: Cursor | None = None
+
+    def connect(self, data_source: str = config.DB_GEONAMES_DATA_SOURCE) -> None:
+        self.__conn = connect(data_source, check_same_thread=False)
         self.__conn.create_function("DISTANCE", 4, helpers.calculate_distance_, deterministic=True)
         self.__conn.row_factory = _convert_row
-        self.__cursor: Cursor = self.__conn.cursor()
-
+        self.__cursor = self.__conn.cursor()
 
     def search_cities(self, query: str) -> list[CityRow]:
         query = query.capitalize()
@@ -137,8 +142,5 @@ GROUP BY
     def __del__(self) -> None:
         self.close()
 
-if __name__ == '__main__':
-    city_db = GeoNamesSqlite.get_instance()
-    city = city_db.get_city_by_row_id(55)
-    print(city_db.get_city_count())
 
+geonames_db = GeoNamesSqlite()

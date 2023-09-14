@@ -10,7 +10,7 @@ from jose import jwt, JWTError
 from pytz import utc
 
 from src import config
-from src.dateutil import get_aware_datetime_now
+from src.datehelpers import get_aware_datetime_now
 
 
 def create_access_token(subject: str, expires_at: datetime) -> str:

@@ -1,3 +1,13 @@
+import pytest
+
+from src.authorization.smsservice.baseservice import BaseSmsService
+from tests.factories.generators import generate_random_mobile_number
+
+
+@pytest.fixture(scope="module")
+def generated_phone_number():
+    return generate_random_mobile_number()
+
 
 def test_signup(client, generated_phone_number):
     response = client.post("/api/v1/signup", json={'phone_number': generated_phone_number})
@@ -8,7 +18,7 @@ def test_signup(client, generated_phone_number):
 
 
 def test_confirm_sms(client, generated_phone_number):
-    from src.authorization.smsservice.baseservice import BaseSmsService
+
 
     code = BaseSmsService.get_code(generated_phone_number)  # "Received the code"
     prepared_data = {"phone_number": generated_phone_number, "sms_code": code}

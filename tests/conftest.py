@@ -7,6 +7,7 @@ from mongomock import MongoClient
 from src import config
 from src.authorization import config as auth_config
 from src.database import init_db, close_db
+from src.geodata.database import geonames_db
 from src.main import app
 from src.scheduling import scheduler
 
@@ -50,11 +51,13 @@ def client(db_config):
     auth_config.SMS_SERVICE_DISABLED = True
 
     scheduler.start()
-
+    geonames_db.connect(config.DB_GEONAMES_DATA_SOURCE)
     client = TestClient(app=app)
+
     yield client
 
     scheduler.shutdown()
+    geonames_db.close()
 
 
 @pytest.fixture()
@@ -63,6 +66,4 @@ def user_factory(db_config):
     yield UserFactory
 
 
-@pytest.fixture(scope="session")
-def generated_phone_number():
-    return generate_random_mobile_number()
+

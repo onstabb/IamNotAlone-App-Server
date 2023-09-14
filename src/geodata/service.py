@@ -1,5 +1,6 @@
-from src.geodata.basetypes import CityRow, GeoPoint
-from src.geodata.database import GeoNamesSqlite
+from src.geodata.geopoint import GeoPoint
+from geodata.cityrow import CityRow
+from src.geodata.database import geonames_db
 from src.geodata.models import City
 
 
@@ -12,7 +13,6 @@ def create_city_if_not_exists(city_row: CityRow) -> City:
 
 
 def create_nearest_city_if_not_exists(coordinates: GeoPoint) -> City:
-    connector = GeoNamesSqlite.get_instance()
-    city_row = connector.get_nearest_city(coordinates)
+    city_row = geonames_db.get_nearest_city(coordinates)
 
     return create_city_if_not_exists(city_row)

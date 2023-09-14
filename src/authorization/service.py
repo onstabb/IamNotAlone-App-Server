@@ -1,6 +1,6 @@
 from src.authorization.models import User
 from src.authorization.password import get_password_hash
-from src.authorization.types import MobilePhoneNumber
+from src.authorization.mobilephonenumber import MobilePhoneNumber
 
 
 

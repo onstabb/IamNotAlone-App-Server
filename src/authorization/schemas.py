@@ -3,7 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel, SecretStr
 
 from src import config
-from src.authorization.types import MobilePhoneNumber, SmsCode
+from src.authorization.mobilephonenumber import MobilePhoneNumber
+from src.authorization.smsservice.smscode import SmsCode
 from src.models import PydanticObjectId
 
 

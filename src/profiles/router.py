@@ -5,6 +5,7 @@ from src.authorization.dependencies import get_unbanned_user
 from src.authorization.models import User
 
 from src.files import helpers as file_helpers
+from src.files import service as file_service
 from src.profiles import service
 from src.profiles.models import Profile
 from src.profiles.dependencies import get_active_profile, get_active_profile_by_id
@@ -32,8 +33,17 @@ def edit_profile(profile_data: PrivateProfileIn, user: User = Depends(get_unbann
         file_token = file_helpers.get_image_token_from_url(photo_url)
         user_id, _created_at = file_helpers.file_token_decode(file_token)
 
-        if user_id != user.id.__str__():
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Images does not belongs to user")
+        if file_service.image_exists(file_token):
+            return HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Image {file_token} does not exists"
+            )
+
+        if user_id != str(user.id):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Images {file_token} does not belongs to user"
+            )
 
     profile = service.create_or_update_profile(profile_data, user)
     return profile

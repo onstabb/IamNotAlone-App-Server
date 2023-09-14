@@ -1,7 +1,7 @@
 from pydantic import BaseModel, HttpUrl, Field, AwareDatetime
 
-from src.geodata.basetypes import GeoPoint
-from src.geodata.types import CityGeonames
+from src.geodata.geopoint import GeoPoint
+from src.geodata.citygeonames import CityGeonames
 
 
 class EventOut(BaseModel):
