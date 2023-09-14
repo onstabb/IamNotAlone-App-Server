@@ -1,7 +1,7 @@
-from src.geodata.geopoint import GeoPoint
+from geodata.geopoint import GeoPoint
 from geodata.cityrow import CityRow
-from src.geodata.database import geonames_db
-from src.geodata.models import City
+from geodata.database import geonames_db
+from geodata.models import City
 
 
 def create_city_if_not_exists(city_row: CityRow) -> City:

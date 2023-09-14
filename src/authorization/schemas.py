@@ -3,9 +3,9 @@ from datetime import datetime
 from pydantic import BaseModel, SecretStr
 
 from src import config
-from src.authorization.mobilephonenumber import MobilePhoneNumber
-from src.authorization.smsservice.smscode import SmsCode
-from src.models import PydanticObjectId
+from authorization.mobilephonenumber import MobilePhoneNumber
+from authorization.smsservice.smscode import SmsCode
+from models import PydanticObjectId
 
 
 class SignUpDataIn(BaseModel):

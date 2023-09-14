@@ -1,11 +1,11 @@
 from fastapi import Depends, HTTPException, status
 
-from src.authorization.dependencies import get_unbanned_user
-from src.authorization.models import User
-from src.datehelpers import get_aware_datetime_now
-from src.profiles.models import Profile
-from src.models import PydanticObjectId
-from src.profiles import service
+from authorization.dependencies import get_unbanned_user
+from authorization.models import User
+from datehelpers import get_aware_datetime_now
+from profiles.models import Profile
+from models import PydanticObjectId
+from profiles import service
 
 
 def get_user_profile(user: User = Depends(get_unbanned_user)) -> Profile:

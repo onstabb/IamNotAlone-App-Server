@@ -1,6 +1,6 @@
 from mongoengine import StringField, BooleanField, ReferenceField
 
-from src.models import BaseDocument
+from models import BaseDocument
 
 
 class User(BaseDocument):

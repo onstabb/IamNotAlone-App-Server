@@ -1,9 +1,9 @@
 from mongoengine import Q as MQ
 
-from src.messages.enums import MessageType
-from src.messages.models import Message
-from src.models import PydanticObjectId
-from src.profiles.models import Profile
+from messages.enums import MessageType
+from messages.models import Message
+from models import PydanticObjectId
+from profiles.models import Profile
 
 
 def create_message(sender: Profile, recipient: Profile, message_type: MessageType, content_text: str | None) -> Message:

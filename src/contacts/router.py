@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from messages.enums import MessageType
 from messages.notificationmanager import notification_manager
-from src.contacts import service
-from src.contacts.enums import ContactState
-from src.contacts.models import ProfileContact
-from src.contacts.schemas import RateIn
-from src.profiles import dependencies as profile_dependencies
-from src.profiles.models import Profile
-from src.profiles.schemas import PublicProfileOut
+from contacts import service
+from contacts.enums import ContactState
+from contacts.models import ProfileContact
+from contacts.schemas import RateIn
+from profiles import dependencies as profile_dependencies
+from profiles.models import Profile
+from profiles.schemas import PublicProfileOut
 
 
 router = APIRouter(tags=['Contact'], prefix="/contacts")

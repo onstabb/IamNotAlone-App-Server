@@ -4,8 +4,8 @@ from fastapi import HTTPException, status
 from telesign.messaging import MessagingClient
 from telesign.rest import RestClient
 
-from src.authorization import config
-from src.authorization.smsservice.baseservice import BaseSmsService
+from authorization import config
+from authorization.smsservice.baseservice import BaseSmsService
 
 log: logging.Logger = logging.getLogger(__name__)
 

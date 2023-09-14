@@ -1,8 +1,8 @@
 from pydantic import BaseModel, field_validator
 
 
-from src.contacts.enums import ContactState
-from src.models import PydanticObjectId
+from contacts.enums import ContactState
+from models import PydanticObjectId
 
 
 class RateIn(BaseModel):

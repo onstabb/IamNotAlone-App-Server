@@ -4,15 +4,15 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status, Depends, 
 from fastapi.concurrency import run_in_threadpool
 
 
-from src.contacts.service import get_contact_by_profile_ids
-from src.messages import service, config
-from src.messages.enums import MessageType
-from src.messages.notificationmanager import notification_manager
-from src.messages.schemas import MessageOut, MessageIn, DialogItemOut
-from src.profiles import dependencies as profiles_dependencies
-from src.profiles import service as profile_service
-from src.profiles.models import Profile
-from src.security import WebSocketJWTBearer
+from contacts.service import get_contact_by_profile_ids
+from messages import service, config
+from messages.enums import MessageType
+from messages.notificationmanager import notification_manager
+from messages.schemas import MessageOut, MessageIn, DialogItemOut
+from profiles import dependencies as profiles_dependencies
+from profiles import service as profile_service
+from profiles.models import Profile
+from security import WebSocketJWTBearer
 
 router: APIRouter = APIRouter(tags=['Messages'], prefix="/messages")
 

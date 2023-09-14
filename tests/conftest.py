@@ -1,17 +1,25 @@
+import os
+import shutil
+from datetime import datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
 from mongomock import MongoClient
 
 
-from src import config
-from src.authorization import config as auth_config
-from src.database import init_db, close_db
-from src.geodata.database import geonames_db
-from src.main import app
-from src.scheduling import scheduler as scheduler_
+import config
+import security
+from authorization import config as auth_config
+from database import init_db, close_db
+from files import config as file_config
+from files import service as file_service
+from geodata.database import geonames_db
+from main import app
+from scheduling import scheduler as scheduler_
 
 
+ROOT_DIR = os.path.join(config.BASE_DIR, "tests")
+DATA_DIR = os.path.join(ROOT_DIR, "data")
 
 def _db_clear(db) -> None:
     db.drop_database(config.DB_NAME)
@@ -27,10 +35,27 @@ def factory_random(seed):
     yield random
 
 @pytest.fixture(scope="session")
+def file_conf():
+    storage_dir = os.path.join(DATA_DIR, "Image Storage")
+    os.mkdir(storage_dir)
+    file_config.IMAGE_FILES_LOCAL_PATH = storage_dir
+    yield
+    shutil.rmtree(storage_dir)
+
+
+
+@pytest.fixture(scope="session")
 def scheduler():
     scheduler_.start()
     yield scheduler_
     scheduler_.shutdown()
+
+
+@pytest.fixture(scope="session")
+def city_db():
+    geonames_db.connect(config.DB_GEONAMES_DATA_SOURCE)
+    yield geonames_db
+    geonames_db.close()
 
 
 @pytest.fixture(scope="session")
@@ -46,27 +71,41 @@ def db_config(factory_random):
     _db_clear(db)
 
     factory_random.reseed_random(131313)
-
     yield db
-
     close_db()
 
 @pytest.fixture()
-def client(db_config, scheduler):
+def client(db_config, scheduler, city_db, file_conf):
     auth_config.SMS_SERVICE_DISABLED = True
-
-    geonames_db.connect(config.DB_GEONAMES_DATA_SOURCE)
     client = TestClient(app=app)
-
     yield client
 
-    geonames_db.close()
 
 
-@pytest.fixture()
-def user_factory(db_config):
-    from tests.factories.factories import UserFactory
+@pytest.fixture(scope="session")
+def user_factory(db_config, city_db):
+    from factories.factories import UserFactory
     yield UserFactory
+
+
+@pytest.fixture(scope="session")
+def authorization_user_only(user_factory):
+    user = user_factory.create(profile=None)
+    headers = {
+        "Authorization": f"Bearer {security.create_access_token(user.id, security.get_token_expiration_from_now())}"
+    }
+    yield headers
+
+@pytest.fixture(scope="session")
+def authorization(user_factory):
+    user = user_factory.create()
+    headers = {
+        "Authorization": f"Bearer {security.create_access_token(user.id, security.get_token_expiration_from_now())}"
+    }
+    yield headers
+
+
+
 
 
 

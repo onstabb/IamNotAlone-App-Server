@@ -4,15 +4,15 @@ import shutil
 import typing
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from fastapi import UploadFile
 
-from src.files import config
-from src.files.helpers import get_image_token_from_url
+from files import config
+from files.helpers import get_image_filename_from_url
 
 
 if typing.TYPE_CHECKING:
-    from src.files.imageurl import ImageUrl
+    from files.imageurl import ImageUrl
 
 
 log = logging.getLogger(__file__)
@@ -20,8 +20,10 @@ log = logging.getLogger(__file__)
 
 def check_image_is_valid(image_filename: str) -> bool:
     image_path: str = get_image_file_dir(image_filename)
-    image: Image = Image.open(image_path)
-
+    try:
+        image: Image = Image.open(image_path)
+    except UnidentifiedImageError:
+        return False
     try:
         image.verify()
         return True
@@ -37,8 +39,12 @@ def get_image_file_dir(image_filename: str) -> str:
 
 
 def image_exists(image_url: typing.Union[str, 'ImageUrl']) -> bool:
-    file_token: str = get_image_token_from_url(image_url)
-    return os.path.exists(get_image_file_dir(file_token))
+    image_filename: str = get_image_filename_from_url(image_url)
+    return image_exists_from_filename(image_filename)
+
+
+def image_exists_from_filename(image_filename: str) -> bool:
+    return os.path.exists(get_image_file_dir(image_filename))
 
 
 def image_compress(image_filename: str) -> None:
@@ -85,3 +91,13 @@ def save_image(upload_file: UploadFile, token: str) -> str:
     destination = Path(os.path.join(config.IMAGE_FILES_LOCAL_PATH, filename))
     save_upload_file(upload_file, destination)
     return filename
+
+
+def remove_image(image_filename: str) -> None:
+    os.remove(get_image_file_dir(image_filename))
+
+
+def remove_image_if_exists(image_filename: str) -> None:
+    if not image_exists_from_filename(image_filename):
+        return
+    remove_image(image_filename)

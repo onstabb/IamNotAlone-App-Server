@@ -3,10 +3,10 @@ from typing import Annotated
 
 from pydantic import BaseModel, Field, constr, HttpUrl
 
-from src.messages import config
-from src.messages.enums import MessageType
-from src.models import PydanticObjectId, SerializeDocToId
-from src.profiles.schemas import PublicProfileOut
+from messages import config
+from messages.enums import MessageType
+from models import PydanticObjectId, SerializeDocToId
+from profiles.schemas import PublicProfileOut
 
 
 PublicProfileOutId = Annotated[PublicProfileOut, SerializeDocToId]

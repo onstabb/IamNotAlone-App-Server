@@ -1,7 +1,7 @@
 from mongoengine import StringField, ReferenceField, BooleanField, EnumField
 
-from src.messages.enums import MessageType
-from src.models import BaseDocument
+from messages.enums import MessageType
+from models import BaseDocument
 
 
 class Message(BaseDocument):

@@ -1,16 +1,16 @@
 from fastapi import APIRouter, Header, HTTPException, status, Depends
 
 
-from src.authorization import service, dependencies
-from src.authorization.models import User
-from src.authorization.password import build_password, verify_password
-from src.authorization.schemas import (
+from authorization import service, dependencies
+from authorization.models import User
+from authorization.password import build_password, verify_password
+from authorization.schemas import (
     SignUpDataIn, TokenDataOut, SmsConfirmationDataIn, SmsConfirmationDataOut, UserOut, UserIn
 )
-from src.authorization.smsservice.telesign import TelesignService
-from src.security import create_access_token, get_token_expiration_from_now
+from authorization.smsservice.telesign import TelesignService
+from security import create_access_token, get_token_expiration_from_now
 
-router: APIRouter = APIRouter(tags=['auth'])
+router: APIRouter = APIRouter(tags=['Authorization'])
 
 
 @router.post("/signup", response_model=SmsConfirmationDataOut)
