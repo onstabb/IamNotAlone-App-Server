@@ -5,7 +5,7 @@ from secrets import choice
 
 from pydantic import constr
 
-from src.authorization import config
+from authorization import config
 
 
 SmsCode = constr(max_length=config.SMS_GENERATED_CODE_LENGTH, min_length=config.SMS_GENERATED_CODE_LENGTH)

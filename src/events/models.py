@@ -1,6 +1,6 @@
 from mongoengine import StringField, ListField, ReferenceField, DateTimeField
 
-from src.models import BaseDocument, LocationPointMixin
+from models import BaseDocument, LocationPointMixin
 
 
 class Event(BaseDocument, LocationPointMixin):

@@ -18,7 +18,7 @@ def test_signup(client, generated_phone_number):
 
 
 def test_confirm_sms(client, generated_phone_number):
-    from src.authorization.smsservice.baseservice import BaseSmsService
+    from authorization.smsservice.baseservice import BaseSmsService
 
     BaseSmsService.send_sms_verification(generated_phone_number, 'uk')
 
@@ -33,7 +33,6 @@ def test_confirm_sms(client, generated_phone_number):
     assert new_password
 
 def test_incorrect_login(client, generated_phone_number):
-
     password = "incorrect"
     response = client.post(
         "/api/v1/login", json={"phone_number": generated_phone_number, "password": password}

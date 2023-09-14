@@ -6,8 +6,8 @@ from typing import Annotated
 from pydantic import PastDate, AfterValidator, BeforeValidator, PositiveInt
 from pydantic_core import PydanticCustomError
 
-from src.datehelpers import get_age
-from src.profiles import config
+from datehelpers import get_age
+from profiles import config
 
 
 def validate_birthday(value: date) -> date:

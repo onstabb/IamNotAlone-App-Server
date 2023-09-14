@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from src.datehelpers import get_aware_datetime_now
-from src.events import service
-from src.events.schemas import EventOut
-from src.profiles import dependencies as profile_dependencies
-from src.profiles.models import Profile
+from datehelpers import get_aware_datetime_now
+from events import service
+from events.schemas import EventOut
+from profiles import dependencies as profile_dependencies
+from profiles.models import Profile
 
 router = APIRouter(tags=["Events"], prefix="/events")
 

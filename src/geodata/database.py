@@ -3,8 +3,8 @@ __all__ = ("geonames_db",)
 from sqlite3 import connect, Connection, Cursor
 
 from src import config
-from src.geodata import helpers
-from src.geodata.geopoint import GeoPoint
+from geodata import helpers
+from geodata.geopoint import GeoPoint
 from geodata.cityrow import CityRow
 
 

@@ -9,8 +9,8 @@ from fastapi.security.utils import get_authorization_scheme_param
 from jose import jwt, JWTError
 from pytz import utc
 
-from src import config
-from src.datehelpers import get_aware_datetime_now
+import config
+from datehelpers import get_aware_datetime_now
 
 
 def create_access_token(subject: str, expires_at: datetime) -> str:

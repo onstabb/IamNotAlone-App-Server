@@ -6,8 +6,8 @@
 #
 # def test_candidate_search(user_factory):
 #
-#     from src.contacts import service
-#     from src.geodata.models import City
+#     from contacts import service
+#     from geodata.models import City
 #     from tests.factories.factories import ContactFactory, MessageFactory
 #
 #     user_factory.create_batch(20)
@@ -45,8 +45,8 @@
 #     from pprint import pprint
 #
 #
-#     from src.messages import service as message_service
-#     from src.profiles import models as profile_model
+#     from messages import service as message_service
+#     from profiles import models as profile_model
 #     from tests.factories.factories import MessageFactory
 #
 #     user_factory.create_batch(10)

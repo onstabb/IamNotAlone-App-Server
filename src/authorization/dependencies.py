@@ -1,9 +1,9 @@
 from fastapi import HTTPException, status, Depends
 
 
-from src.authorization.service import get_user_by_id
+from authorization.service import get_user_by_id
 from authorization.models import User
-from src.security import JWTBearer
+from security import JWTBearer
 
 
 

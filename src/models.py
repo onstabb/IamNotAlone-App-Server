@@ -13,7 +13,7 @@ from pydantic_core import core_schema
 from pydantic_core.core_schema import ValidationInfo
 
 if typing.TYPE_CHECKING:
-    from src.geodata.geopoint import GeoPoint
+    from geodata.geopoint import GeoPoint
 
 class PydanticObjectId(ObjectId):
 

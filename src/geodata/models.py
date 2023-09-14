@@ -2,7 +2,7 @@ __all__ = ('City',)
 
 from mongoengine import IntField, StringField
 
-from src.models import BaseDocument, LocationPointMixin
+from models import BaseDocument, LocationPointMixin
 
 
 class City(BaseDocument, LocationPointMixin):

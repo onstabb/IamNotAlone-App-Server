@@ -3,13 +3,13 @@ import datetime
 import factory
 from factory import fuzzy, random
 
-from src.authorization.models import User
-from src.contacts import service as contact_service
-from src.contacts.models import ProfileContact, ContactState
-from src.messages.models import Message, MessageType
-from src.profiles import config as profile_config
-from src.profiles.enums import Gender, ResidenceLength, ResidencePlan
-from src.profiles.models import Profile
+from authorization.models import User
+from contacts import service as contact_service
+from contacts.models import ProfileContact, ContactState
+from messages.models import Message, MessageType
+from profiles import config as profile_config
+from profiles.enums import Gender, ResidenceLength, ResidencePlan
+from profiles.models import Profile
 
 from tests.factories import generators
 
@@ -25,8 +25,9 @@ class UserFactory(factory.mongoengine.MongoEngineFactory):
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
         instance = model_class(*args, **kwargs)
-        instance.profile.save()
-        instance.profile = instance.profile.to_dbref()
+        if instance.profile:
+            instance.profile.save()
+            instance.profile = instance.profile.to_dbref()
         instance.save()
         return instance
         

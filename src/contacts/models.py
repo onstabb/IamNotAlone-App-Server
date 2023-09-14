@@ -1,7 +1,7 @@
 from mongoengine import ReferenceField, EnumField
 
-from src.contacts.enums import ContactState
-from src.models import BaseDocument
+from contacts.enums import ContactState
+from models import BaseDocument
 
 
 CONTACT_RESULT_TABLE = (

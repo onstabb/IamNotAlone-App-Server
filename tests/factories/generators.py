@@ -1,11 +1,11 @@
 from random import Random
 
 
-from src.authorization.mobilephonenumber import validate_mobile_phone_number
-from src.authorization.password import build_password, get_password_hash
-from src.geodata import service as geodata_service
-from src.geodata.database import geonames_db
-from src.geodata.models import City
+from authorization.mobilephonenumber import validate_mobile_phone_number
+from authorization.password import build_password, get_password_hash
+from geodata import service as geodata_service
+from geodata.database import geonames_db
+from geodata.models import City
 
 
 def _get_random(random_obj: Random | None = None) -> Random:

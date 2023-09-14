@@ -3,11 +3,11 @@ import logging
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
-from src import config
-from src.api import api_router
-from src.database import init_db, close_db
-from src.geodata.database import geonames_db
-from src.scheduling import scheduler
+import config
+from api import api_router
+from database import init_db, close_db
+from geodata.database import geonames_db
+from scheduling import scheduler
 
 logging.basicConfig(level=logging.INFO)
 

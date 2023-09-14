@@ -1,18 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import RedirectResponse
 
-from src.authorization.dependencies import get_unbanned_user
-from src.authorization.models import User
+from authorization.dependencies import get_unbanned_user
+from authorization.models import User
 
-from src.files import helpers as file_helpers
-from src.files import service as file_service
-from src.profiles import service
-from src.profiles.models import Profile
-from src.profiles.dependencies import get_active_profile, get_active_profile_by_id
-from src.profiles.schemas import PrivateProfileIn, PrivateProfileOut, PublicProfileOut
+from files import helpers as file_helpers
+from files import service as file_service
+from profiles import service
+from profiles.models import Profile
+from profiles.dependencies import get_active_profile, get_active_profile_by_id
+from profiles.schemas import PrivateProfileIn, PrivateProfileOut, PublicProfileOut
 
 
-router: APIRouter = APIRouter(tags=['profiles'], prefix='/profiles')
+router: APIRouter = APIRouter(tags=['Profiles'], prefix='/profiles')
 
 
 @router.get("/me", response_model=PrivateProfileOut)
@@ -30,7 +30,7 @@ def edit_profile(profile_data: PrivateProfileIn, user: User = Depends(get_unbann
 
     for photo_url in profile_data.photo_urls:
 
-        file_token = file_helpers.get_image_token_from_url(photo_url)
+        file_token = file_helpers.get_image_filename_from_url(photo_url)
         user_id, _created_at = file_helpers.file_token_decode(file_token)
 
         if file_service.image_exists(file_token):

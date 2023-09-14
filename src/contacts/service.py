@@ -2,12 +2,12 @@ from datetime import datetime
 
 from mongoengine import Q as MQ, DoesNotExist
 
-from src.contacts import config
-from src.contacts.enums import ContactState
-from src.contacts.models import ProfileContact, CONTACT_RESULT_TABLE
-from src.contacts.schemas import RateIn
-from src.profiles.enums import Gender
-from src.profiles.models import Profile
+from contacts import config
+from contacts.enums import ContactState
+from contacts.models import ProfileContact, CONTACT_RESULT_TABLE
+from contacts.schemas import RateIn
+from profiles.enums import Gender
+from profiles.models import Profile
 
 
 def get_contact(first_profile: 'Profile', second_profile: 'Profile',) -> ProfileContact | None:

@@ -1,12 +1,12 @@
 from pydantic import BaseModel, constr, Field, AliasChoices, conlist, HttpUrl
 
-from src.files.imageurl import ImageUrl
-from src.geodata.citygeonames import CityGeonames
-from src.geodata.geopoint import GeoPointType
-from src.models import PydanticObjectId
-from src.profiles.birthday import DateOfBirth, Age
-from src.profiles import config as model_config
-from src.profiles.enums import Gender, ResidenceLength, ResidencePlan
+from files.imageurl import ImageUrl
+from geodata.citygeonames import CityGeonames
+from geodata.geopoint import GeoPointType
+from models import PydanticObjectId
+from profiles.birthday import DateOfBirth, Age
+from profiles import config as model_config
+from profiles.enums import Gender, ResidenceLength, ResidencePlan
 
 
 ProfileName = constr(max_length=model_config.NAME_MAX_LENGTH, min_length=model_config.NAME_MIN_LENGTH)

@@ -6,12 +6,12 @@ from datetime import datetime, timedelta
 
 from apscheduler.job import Job
 
-from src.authorization import config
-from src.authorization.mobilephonenumber import MobilePhoneNumber
-from src.authorization.smsservice.smscode import SmsCode, generate_code
-from src.datehelpers import get_aware_datetime_now
-from src.i18n import translate
-from src.scheduling import scheduler
+from authorization import config
+from authorization.mobilephonenumber import MobilePhoneNumber
+from authorization.smsservice.smscode import SmsCode, generate_code
+from datehelpers import get_aware_datetime_now
+from i18n import translate
+from scheduling import scheduler
 
 
 SmsServiceLogger: logging.Logger = logging.getLogger("SmsService")

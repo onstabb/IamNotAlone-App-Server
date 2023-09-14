@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-from src.geodata.geopoint import GeoPointType
+from geodata.geopoint import GeoPointType
 
 
 class CityRow(BaseModel):

@@ -2,11 +2,11 @@ import asyncio
 
 from fastapi import WebSocket
 
-from src.messages import service
-from src.messages.enums import MessageType
-from src.messages.schemas import MessageOut
-from src.models import PydanticObjectId
-from src.profiles.models import Profile
+from messages import service
+from messages.enums import MessageType
+from messages.schemas import MessageOut
+from models import PydanticObjectId
+from profiles.models import Profile
 
 
 class _NotificationManager:

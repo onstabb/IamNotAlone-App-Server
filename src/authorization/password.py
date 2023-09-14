@@ -6,7 +6,7 @@ import secrets
 from passlib.context import CryptContext
 from pydantic import constr
 
-from src.authorization import config
+from authorization import config
 
 
 ALPHABET = f'{string.ascii_letters}{string.digits}'

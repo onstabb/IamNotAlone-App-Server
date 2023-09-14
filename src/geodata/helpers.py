@@ -1,6 +1,6 @@
 import math
 
-from src.geodata.geopoint import GeoPoint
+from geodata.geopoint import GeoPoint
 
 
 def calculate_distance(first_point: GeoPoint, second_point: GeoPoint) -> float:

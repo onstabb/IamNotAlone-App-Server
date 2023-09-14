@@ -4,11 +4,11 @@ import typing
 
 import mongoengine
 
-from src.authorization.models import User
-from src.contacts.models import ProfileContact
-from src.events.models import Event
-from src.geodata.models import City
-from src.profiles.models import Profile
+from authorization.models import User
+from contacts.models import ProfileContact
+from events.models import Event
+from geodata.models import City
+from profiles.models import Profile
 
 
 def init_db(**configuration) -> typing.Any:

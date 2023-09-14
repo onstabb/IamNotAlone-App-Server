@@ -1,6 +1,6 @@
 import gettext
 
-from src import config
+import config
 
 
 def translate(message: str, language: str = "") -> str:

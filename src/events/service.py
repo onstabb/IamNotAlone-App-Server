@@ -2,10 +2,10 @@ from datetime import datetime
 
 from pytz import utc
 
-from src.events.models import Event
-from src.geodata.models import City
-from src.models import PydanticObjectId
-from src.profiles.models import Profile
+from events.models import Event
+from geodata.models import City
+from models import PydanticObjectId
+from profiles.models import Profile
 
 
 def get_actual_events_in_city(city_id: str | City) -> list[Event]:

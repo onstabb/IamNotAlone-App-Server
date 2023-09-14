@@ -6,8 +6,8 @@ from pydantic import GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
-from src.geodata.cityrow import CityRow
-from src.geodata.database import geonames_db
+from geodata.cityrow import CityRow
+from geodata.database import geonames_db
 
 
 

@@ -1,10 +1,10 @@
 import mongoengine
 
-from src.authorization.models import User
-from src.profiles.models import Profile
-from src.profiles.schemas import PrivateProfileIn
-from src.geodata.models import City
-from src.geodata.service import create_city_if_not_exists
+from authorization.models import User
+from profiles.models import Profile
+from profiles.schemas import PrivateProfileIn
+from geodata.models import City
+from geodata.service import create_city_if_not_exists
 
 
 def get_active_profile(profile_id: str) -> Profile | None:
