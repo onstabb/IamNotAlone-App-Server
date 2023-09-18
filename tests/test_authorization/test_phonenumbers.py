@@ -39,3 +39,4 @@ def test_incorrect_phone_number_format(number: str):
         return
     else:
         raise AssertionError("Format must not be validated!")
+

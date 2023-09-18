@@ -10,6 +10,7 @@ from mongomock import MongoClient
 import config
 import security
 from authorization import config as auth_config
+from authorization.models import User
 from database import init_db, close_db
 from files import config as file_config
 from files import service as file_service
@@ -23,6 +24,14 @@ DATA_DIR = os.path.join(ROOT_DIR, "data")
 
 def _db_clear(db) -> None:
     db.drop_database(config.DB_NAME)
+
+
+def get_auth_headers(user: User) -> dict:
+    headers = {
+        "Authorization": f"Bearer {security.create_access_token(user.id, security.get_token_expiration_from_now())}"
+    }
+    return headers
+
 
 @pytest.fixture(scope="session")
 def seed():
@@ -92,10 +101,7 @@ def user_factory(db_config, city_db):
 def _prepare_test_user_auth(user_factory):
     user = user_factory.create(profile=None)
 
-    headers = {
-        "Authorization": f"Bearer {security.create_access_token(user.id, security.get_token_expiration_from_now())}"
-    }
-    yield headers, user
+    yield get_auth_headers(user), user
 
 
 @pytest.fixture(scope="session")

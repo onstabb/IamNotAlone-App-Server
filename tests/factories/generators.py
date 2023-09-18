@@ -46,7 +46,7 @@ def create_random_city(random: Random | None = None) -> City:
     random =  _get_random(random)
     city = geodata_service.create_city_if_not_exists(
         geonames_db.get_city_by_row_id(
-            random.randint(0, geonames_db.get_city_count())
+            random.randint(0, 17391)
         )
     )
     return city

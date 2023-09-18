@@ -50,6 +50,8 @@ class ProfileFactory(factory.mongoengine.MongoEngineFactory):
     residence_length = factory.Iterator(ResidenceLength)
     photo_urls = factory.List([factory.Faker("image_url")])
 
+    disabled = fuzzy.FuzzyChoice((True, True, True, False))
+
 
 class ContactFactory(factory.mongoengine.MongoEngineFactory):
 

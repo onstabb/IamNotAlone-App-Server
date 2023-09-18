@@ -26,8 +26,12 @@ class _ProfileBase(BaseModel):
 class _ProfileOutBase(_ProfileBase):
     id: PydanticObjectId = Field(validation_alias=AliasChoices("id", "_id"))
     photo_urls: list[HttpUrl]
-    current_city_id: int | CityGeonames = Field(validation_alias="current_city")
-    native_city_id: int | None | CityGeonames = Field(validation_alias="native_city")
+    current_city_id: int | CityGeonames = Field(
+        validation_alias=AliasChoices("current_city", "current_city_id")
+    )
+    native_city_id: int | None | CityGeonames = Field(
+        validation_alias=AliasChoices("native_city", "native_city_id")
+    )
 
 
 class PrivateProfileIn(_ProfileBase):
@@ -51,4 +55,5 @@ class PrivateProfileOut(_ProfileOutBase):
 
 
 class PublicProfileOut(_ProfileOutBase):
-    age: Age = Field(validation_alias="birthday")
+    age: Age = Field(validation_alias=AliasChoices("birthday", "age"))
+
