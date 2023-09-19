@@ -11,7 +11,7 @@ def data(user_image_url):
         "description": "I like cats, sushi and films.",
         "residence_length": "sometime",
         "residence_plan": "stay",
-        "gender_preference": "any",
+        "gender_preference": None,
         "gender": "male",
         "current_city_id": 3081368,
         "photo_urls": [user_image_url]

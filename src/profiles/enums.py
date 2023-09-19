@@ -5,7 +5,7 @@ import enum
 class Gender(enum.StrEnum):
     MALE = "male"
     FEMALE = "female"
-    ANY = "any"
+    NON_BINARY = "non_binary"
 
 
 @enum.unique

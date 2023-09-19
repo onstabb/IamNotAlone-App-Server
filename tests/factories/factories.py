@@ -1,7 +1,7 @@
 import datetime
 
 import factory
-from factory import fuzzy, random
+from factory import fuzzy
 
 from authorization.models import User
 from contacts import service as contact_service
@@ -14,23 +14,21 @@ from profiles.models import Profile
 from tests.factories import generators
 
 
-class UserFactory(factory.mongoengine.MongoEngineFactory):
+class UserFactory(factory.mongoengine.MongoEngineFactory,):
     class Meta:
         model = User
 
     phone_number = factory.LazyFunction(generators.generate_random_mobile_number)
     password = factory.LazyFunction(generators.generate_hashed_password)
-    profile = factory.SubFactory("tests.factories.factories.ProfileFactory")
+    profile = factory.SubFactory("tests.factories.factories.ProfileFactory",)
 
     @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        instance = model_class(*args, **kwargs)
-        if instance.profile:
-            instance.profile.save()
-            instance.profile = instance.profile.to_dbref()
-        instance.save()
-        return instance
-        
+    def insert_many(cls, size, **kwargs) -> None:
+        instances_built = cls.build_batch(size, **kwargs)
+        Profile.objects.insert([user.profile for user in instances_built], load_bulk=False)
+        cls._meta.model.objects.insert(instances_built, load_bulk=False)
+
+
 class ProfileFactory(factory.mongoengine.MongoEngineFactory):
     class Meta:
         model = Profile
@@ -43,8 +41,8 @@ class ProfileFactory(factory.mongoengine.MongoEngineFactory):
     current_city = factory.LazyFunction(generators.create_random_city)
     native_city = factory.LazyFunction(generators.create_random_city)
     coordinates = factory.LazyAttribute(lambda self: self.current_city.coordinates)
-    gender = factory.Iterator([Gender.MALE, Gender.FEMALE])
-    gender_preference = factory.Iterator(Gender)
+    gender = factory.Iterator(Gender)
+    gender_preference = factory.Iterator([None] + [gender for gender in Gender])
     description = factory.Faker("paragraph", nb_sentences=2)
     residence_plan = factory.Iterator(ResidencePlan)
     residence_length = factory.Iterator(ResidenceLength)

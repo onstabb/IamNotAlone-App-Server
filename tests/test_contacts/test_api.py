@@ -9,9 +9,9 @@ from profiles.schemas import PublicProfileOut
     "gender_preference,gender, candidate_gender_preference, candidate_gender",
     [
         (Gender.FEMALE, Gender.MALE, Gender.MALE, Gender.FEMALE),
-        (Gender.ANY, Gender.FEMALE, Gender.ANY, Gender.MALE),
-        (Gender.ANY, Gender.MALE, Gender.MALE, Gender.MALE),
-        (Gender.FEMALE, Gender.FEMALE, Gender.ANY, Gender.FEMALE)
+        (None, Gender.FEMALE, None, Gender.MALE),
+        (None, Gender.MALE, Gender.MALE, Gender.MALE),
+        (Gender.FEMALE, Gender.FEMALE, None, Gender.FEMALE)
     ]
 )
 def test_success_get_candidates_by_gender_preferences(
@@ -19,7 +19,7 @@ def test_success_get_candidates_by_gender_preferences(
 ):
 
     """    This test tests gender preference for both the candidate and the seeker.   """
-    user_factory.create_batch(5)
+    user_factory.insert_many(5)
     user_factory.create_batch(
         1,
         profile__disabled=False,
@@ -43,5 +43,5 @@ def test_success_get_candidates_by_gender_preferences(
 
     for doc in data:
         candidate = PublicProfileOut(**doc)
-        assert profile.gender == candidate.gender_preference or candidate.gender_preference == Gender.ANY
-        assert profile.gender_preference == candidate.gender or profile.gender_preference == Gender.ANY
+        assert profile.gender == candidate.gender_preference or candidate.gender_preference is None
+        assert profile.gender_preference == candidate.gender or profile.gender_preference is None

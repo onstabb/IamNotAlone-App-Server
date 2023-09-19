@@ -61,14 +61,15 @@ def get_contact_status(state_1: ContactState, state_2: ContactState) -> ContactS
 
 
 def get_candidates(profile: 'Profile', maximum: int = config.CANDIDATES_LIMIT) -> list[dict]:
-    do_not_search: Gender = Gender.MALE if profile.gender == Gender.FEMALE else Gender.FEMALE
+
     match_query = {
         "disabled": False,
         "_id": {"$ne": profile.id},
-        "gender_preference": {"$ne": do_not_search},
+        "$or":[{"gender_preference": {"$eq": profile.gender}}, {"gender_preference": {"$eq": None}}]
+
     }
 
-    if profile.gender_preference != Gender.ANY:
+    if profile.gender_preference is not None:
         match_query["gender"] = profile.gender_preference
 
     pipeline = [

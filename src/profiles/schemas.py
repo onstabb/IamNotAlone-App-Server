@@ -18,7 +18,7 @@ ProfileDescription = constr(
 class _ProfileBase(BaseModel):
     name: ProfileName
     gender: Gender
-    gender_preference: Gender
+    gender_preference: Gender | None = None
     description: ProfileDescription
     residence_length: ResidenceLength
     residence_plan: ResidencePlan
