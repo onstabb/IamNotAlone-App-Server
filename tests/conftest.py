@@ -37,11 +37,13 @@ def get_auth_headers(user: User) -> dict:
 def seed():
     yield 131313
 
+
 @pytest.fixture(scope="session")
 def factory_random(seed):
     from factory import random
     random.reseed_random(seed)
     yield random
+
 
 @pytest.fixture(scope="session")
 def file_conf():
@@ -78,17 +80,16 @@ def db_mock_config():
 def db_config(factory_random):
     db = init_db(host=config.DB_HOST, db=config.DB_NAME)
     _db_clear(db)
-
     factory_random.reseed_random(131313)
     yield db
     close_db()
+
 
 @pytest.fixture()
 def client(db_config, scheduler, city_db, file_conf):
     auth_config.SMS_SERVICE_DISABLED = True
     client = TestClient(app=app)
     yield client
-
 
 
 @pytest.fixture(scope="session")
