@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 
 from authorization.dependencies import get_unbanned_user
 from authorization.models import User
@@ -25,8 +25,13 @@ def get_profile(profile: Profile = Depends(get_active_profile_by_id)):
     return profile
 
 
-@router.post("/me", response_model=PrivateProfileOut)
-def edit_profile(profile_data: PrivateProfileIn, user: User = Depends(get_unbanned_user)):
+@router.post(
+    "/me",
+    response_model=PrivateProfileOut,
+    status_code=status.HTTP_200_OK,
+    responses={200: {"detail": "Profile updated"}, 201: {"detail": "Profile created"}},
+)
+def edit_profile(profile_data: PrivateProfileIn, response: Response, user: User = Depends(get_unbanned_user)):
 
     for photo_url in profile_data.photo_urls:
 
@@ -35,16 +40,17 @@ def edit_profile(profile_data: PrivateProfileIn, user: User = Depends(get_unbann
 
         if not file_service.image_exists(photo_url):
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Image {file_token} does not exists"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Image {file_token} could not be found"
             )
 
         if user_id != str(user.id):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Images {file_token} does not belongs to user"
+                detail=f"You don't have permission to access {file_token} image"
             )
 
+    response.status_code = status.HTTP_201_CREATED if user.profile is None else status.HTTP_200_OK
     profile = service.create_or_update_profile(profile_data, user)
     return profile
 

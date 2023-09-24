@@ -66,7 +66,6 @@ def get_candidates(profile: 'Profile', maximum: int = config.CANDIDATES_LIMIT) -
         "disabled": False,
         "_id": {"$ne": profile.id},
         "$or":[{"gender_preference": {"$eq": profile.gender}}, {"gender_preference": {"$eq": None}}]
-
     }
 
     if profile.gender_preference is not None:

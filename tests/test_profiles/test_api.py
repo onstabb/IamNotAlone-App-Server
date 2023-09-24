@@ -27,7 +27,7 @@ def test_create_profile(client, authorization_user_only, data):
     response = client.post("/api/v1/profiles/me", json=data, headers=authorization_user_only)
     response_data: dict = response.json()
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response_data.get("name")
 
 

@@ -1,6 +1,7 @@
 import enum
 
 
+
 @enum.unique
 class ContactState(enum.StrEnum):
     WAIT = "wait"

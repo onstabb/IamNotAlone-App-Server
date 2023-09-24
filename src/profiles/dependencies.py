@@ -25,7 +25,7 @@ def get_active_profile(profile: Profile = Depends(get_user_profile)) -> Profile:
     return profile
 
 
-def get_active_profile_by_id(profile_id: str | PydanticObjectId):
+def get_active_profile_by_id(profile_id: PydanticObjectId):
 
     if isinstance(profile_id, PydanticObjectId):
         profile_id = profile_id.__str__()

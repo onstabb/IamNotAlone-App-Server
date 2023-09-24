@@ -14,3 +14,9 @@ api_router.include_router(event_router)
 api_router.include_router(file_router)
 api_router.include_router(message_router)
 api_router.include_router(profile_router)
+
+
+@api_router.get("/")
+def check_alive():
+
+    return {"detail": "OK"}

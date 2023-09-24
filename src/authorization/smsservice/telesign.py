@@ -27,6 +27,6 @@ class TelesignService(BaseSmsService):
         log.error(response_message)
 
         match response.status_code:
-            case 400: raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE)
+            case 400: raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
             case 503: raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE)
             case _: raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
