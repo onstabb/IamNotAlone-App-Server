@@ -11,7 +11,7 @@ class Profile(BaseDocument, LocationPointMixin):
     name = StringField(required=True)
     birthday = DateField(required=True)
     gender = EnumField(enum=Gender, required=True)
-    gender_preference: Gender = EnumField(enum=Gender, required=True)
+    gender_preference: Gender | None = EnumField(enum=Gender, default=None, null=True)
     description = StringField(required=True)
 
     current_city = ReferenceField('City', required=True)

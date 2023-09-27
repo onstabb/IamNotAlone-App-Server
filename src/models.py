@@ -7,6 +7,7 @@ from mongoengine import (
     Document,
     DoesNotExist, PointField
 )
+from mongoengine.base import BaseField
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler, PlainSerializer
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
@@ -57,6 +58,10 @@ class BaseDocument(Document):
             pass
 
         return None
+
+    @classmethod
+    def get_field_info(cls) -> dict[str, BaseField]:
+        return cls._fields      # noqa
 
     @property
     def created_at(self) -> datetime:

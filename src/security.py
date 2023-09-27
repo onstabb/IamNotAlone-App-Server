@@ -37,7 +37,7 @@ def get_token_expiration_from_now() -> datetime:
 
 def _raise_auth_error(connection: Request | WebSocket, detail: str) -> NoReturn:
     if isinstance(connection, Request):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=detail)
     else:
         raise WebSocketException(code=status.WS_1008_POLICY_VIOLATION, reason=detail)
 

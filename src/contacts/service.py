@@ -43,7 +43,7 @@ def update_rate(rate_in: RateIn, contact: ProfileContact, by_initializer: bool) 
     return contact
 
 
-def get_profile_state(profile: Profile, contact: ProfileContact) -> ContactState:
+def get_profile_state(profile: Profile, contact: ProfileContact) -> ContactState | None:
 
     if profile == contact.initializer:
         return contact.initializer_state
@@ -53,22 +53,22 @@ def get_profile_state(profile: Profile, contact: ProfileContact) -> ContactState
         raise ValueError("Given profile must be in this relationship!")
 
 
-def get_contact_status(state_1: ContactState, state_2: ContactState) -> ContactState:
-    enum_list: list[ContactState] = list(ContactState)
+def get_contact_status(state_1: ContactState | None, state_2: ContactState | None) -> ContactState | None:
+    enum_list: list[ContactState | None] = [None] + list(ContactState)
     index_1: int = enum_list.index(state_1)
     index_2: int = enum_list.index(state_2)
     return CONTACT_RESULT_TABLE[index_1][index_2]
 
 
 def get_candidates(profile: 'Profile', maximum: int = config.CANDIDATES_LIMIT) -> list[dict]:
-    do_not_search: Gender = Gender.MALE if profile.gender == Gender.FEMALE else Gender.FEMALE
+
     match_query = {
         "disabled": False,
         "_id": {"$ne": profile.id},
-        "gender_preference": {"$ne": do_not_search},
+        "$or":[{"gender_preference": {"$eq": profile.gender}}, {"gender_preference": {"$eq": None}}]
     }
 
-    if profile.gender_preference != Gender.ANY:
+    if profile.gender_preference is not None:
         match_query["gender"] = profile.gender_preference
 
     pipeline = [

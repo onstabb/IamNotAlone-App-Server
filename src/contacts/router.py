@@ -29,17 +29,17 @@ async def rate_profile(rate: RateIn, profile: Profile = Depends(profile_dependen
     if not contact:
         contact = service.create_contact(initializer=profile, respondent=other_profile)
 
-    if contact.status != ContactState.WAIT:
+    if contact.status is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Contact are already defined")
 
-    profile_state: ContactState = service.get_profile_state(profile, contact)
-    if profile_state != ContactState.WAIT:
+    profile_state: ContactState | None = service.get_profile_state(profile, contact)
+    if profile_state is not None:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The choice has already been made")
 
     is_initializer = contact.initializer == profile
     service.update_rate(rate, contact, is_initializer)
 
-    if contact.status == ContactState.WAIT and rate.contact == rate.contact.ESTABLISHED:
+    if contact.status is None and rate.contact == rate.contact.ESTABLISHED:
         notification_manager.create_and_send_message(
             contact.initializer, contact.respondent, MessageType.LIKE, None
         )

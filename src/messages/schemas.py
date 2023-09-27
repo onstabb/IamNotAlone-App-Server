@@ -1,7 +1,7 @@
 import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, Field, constr, HttpUrl
+from pydantic import BaseModel, Field, constr, HttpUrl, ConfigDict
 
 from messages import config
 from messages.enums import MessageType
@@ -18,12 +18,14 @@ class MessageIn(BaseModel):
 
 
 class MessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: PydanticObjectId
     sender: PublicProfileOutId = Field(serialization_alias="sender_id")
     recipient: PublicProfileOutId = Field(serialization_alias="recipient_id")
-    date: datetime.date = Field(validation_alias="created_at",)
+    date: datetime.datetime = Field(validation_alias="created_at",)
     message_type: MessageType
-    content_text: str
+    content_text: str | None
 
 
 class DialogItemOut(BaseModel):

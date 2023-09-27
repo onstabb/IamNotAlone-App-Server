@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import WebSocket
 
 from messages import service
@@ -29,7 +27,7 @@ class _NotificationManager:
     ) -> MessageOut:
         message = service.create_message(sender, recipient, message_type, content_text)
         message_out: MessageOut = MessageOut.model_validate(message)
-        asyncio.run(self.send_message(message_out))
+        # asyncio.to_thread(asyncio.run, self.send_message(message_out))
         return message_out
 
     async def send_message(self, message_out: MessageOut) -> None:

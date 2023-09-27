@@ -10,6 +10,7 @@ from security import JWTBearer
 
 def get_user_by_token(subject: str = Depends(JWTBearer)) -> User:
     user: User | None = get_user_by_id(user_id=subject)
+
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user

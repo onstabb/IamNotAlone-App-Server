@@ -1,5 +1,6 @@
 __all__ = ("geonames_db",)
 
+import logging
 from sqlite3 import connect, Connection, Cursor
 
 from src import config
@@ -7,6 +8,8 @@ from geodata import helpers
 from geodata.geopoint import GeoPoint
 from geodata.cityrow import CityRow
 
+
+log = logging.getLogger(__name__)
 
 def _convert_row(_cursor: Cursor, row: tuple) -> CityRow | int:
 
@@ -105,10 +108,12 @@ GROUP BY
         self.__cursor: Cursor | None = None
 
     def connect(self, data_source: str = config.DB_GEONAMES_DATA_SOURCE) -> None:
+
         self.__conn = connect(data_source, check_same_thread=False)
         self.__conn.create_function("DISTANCE", 4, helpers.calculate_distance_, deterministic=True)
         self.__conn.row_factory = _convert_row
         self.__cursor = self.__conn.cursor()
+        log.info('Connected source "%s""', data_source)
 
     def search_cities(self, query: str) -> list[CityRow]:
         query = query.capitalize()
@@ -138,6 +143,7 @@ GROUP BY
     def close(self) -> None:
         self.__cursor.close()
         self.__conn.close()
+        log.info("Disconnected")
 
     def __del__(self) -> None:
         self.close()
