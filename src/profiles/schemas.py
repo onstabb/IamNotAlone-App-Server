@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr, Field, AliasChoices, conlist, HttpUrl
+from pydantic import BaseModel, constr, Field, AliasChoices, conlist, HttpUrl, ConfigDict
 
 from files.imageurl import ImageUrl
 from geodata.citygeonames import CityGeonames
@@ -55,5 +55,7 @@ class PrivateProfileOut(_ProfileOutBase):
 
 
 class PublicProfileOut(_ProfileOutBase):
+    model_config = ConfigDict(from_attributes=True)
+
     age: Age = Field(validation_alias=AliasChoices("birthday", "age"))
 

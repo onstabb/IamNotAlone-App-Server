@@ -58,8 +58,8 @@ class ContactFactory(factory.mongoengine.MongoEngineFactory):
 
     initializer = factory.Iterator(Profile.objects[:1])
     respondent = factory.Iterator(Profile.objects[1:])
-    initializer_state = factory.Iterator(ContactState)
-    respondent_state = factory.Iterator(ContactState)
+    initializer_state = factory.Iterator([contact for contact in ContactState] + [None])
+    respondent_state = factory.Iterator([contact for contact in ContactState] + [None])
     status = factory.LazyAttribute(
         lambda contact: contact_service.get_contact_status(contact.initializer_state, contact.respondent_state)
     )

@@ -1,3 +1,3 @@
 
 
-CANDIDATES_LIMIT: int = 10
+CANDIDATES_LIMIT: int = 1
