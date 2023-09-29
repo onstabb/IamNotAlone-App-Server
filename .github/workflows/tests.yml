@@ -37,4 +37,6 @@ jobs:
       run: cd tests
 
     - name: Run Tests
-      run: pytest .
+      run: |
+        pip install pytest pytest-cov
+        pytest . --doctest-modules --junitxml=junit/test-results.xml --cov=com --cov-report=xml --cov-report=html
