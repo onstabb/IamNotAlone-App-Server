@@ -46,7 +46,7 @@ def factory_random(seed):
 
 
 @pytest.fixture(scope="session")
-def file_conf():
+def image_file_storage_conf():
     storage_dir = os.path.join(DATA_DIR, "Image Storage")
     if not os.path.exists(storage_dir):
         os.mkdir(storage_dir)
@@ -71,7 +71,7 @@ def city_db():
 
 @pytest.fixture(scope="session")
 def db_mock_config():
-    db = init_db(host=config.DB_HOST, db=config.DB_NAME, mongo_client_class=MongoClient)
+    db = init_db(host=config.DB_HOST, db=config.DB_NAME, mongo_client_class=MongoClient, )
     yield db
     close_db()
 
@@ -86,7 +86,7 @@ def db_config(factory_random):
 
 
 @pytest.fixture()
-def client(db_config, scheduler, city_db, file_conf):
+def client(db_config, scheduler, city_db, image_file_storage_conf):
     auth_config.SMS_SERVICE_DISABLED = True
     client = TestClient(app=app)
     yield client
