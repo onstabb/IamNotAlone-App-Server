@@ -19,9 +19,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set working directory to /tests
-      run: cd /tests
-
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -36,5 +33,8 @@ jobs:
       run: |
         python -m pip install -r requirements-dev.txt
 
+    - name: Set working directory to /tests
+      run: cd tests
+
     - name: Run Tests
-      run: pytest tests
+      run: pytest .
