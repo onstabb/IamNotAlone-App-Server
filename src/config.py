@@ -11,7 +11,7 @@ ROOT_DIR: str = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH: str = os.path.join(BASE_DIR, "data")
 
 SERVER_URL: str = os.getenv("SERVER_URL", "http://127.0.0.1:8000")
-IMAGE_HOSTS: list[str] = os.getenv("IMAGE_HOSTS", ).split(", ")
+IMAGE_HOSTS: list[str] = os.getenv("IMAGE_HOSTS", "127.0.0.1").split(", ")
 
 STATIC_PATH: str = os.path.join(BASE_DIR, "static")
 
