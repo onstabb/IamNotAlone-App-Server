@@ -11,9 +11,16 @@ jobs:
     name: Run Tests
     runs-on: ubuntu-latest
 
+    env:
+      AUTH_SECRET_KEY: ${{ secrets.AUTH_SECRET_KEY }}
+      DB_HOST: ${{ secrets.DB_HOST }}
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Set working directory to /tests
+      run: cd /tests
 
     - name: Set up Python
       uses: actions/setup-python@v2
