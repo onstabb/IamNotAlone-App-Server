@@ -34,8 +34,7 @@ jobs:
         python -m pip install -r requirements-dev.txt
 
     - name: Compile Translations
-      run: |
-        msgfmt -o tests/data/locales/en/LC_MESSAGES/base.mo tests/data/locales/en/LC_MESSAGES/base.po
+      uses: whtsky/msgfmt-action@20190305
 
     - name: Set working directory to /tests
       run: cd tests
