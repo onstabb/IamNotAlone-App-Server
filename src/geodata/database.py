@@ -145,8 +145,5 @@ GROUP BY
         self.__conn.close()
         log.info("Disconnected")
 
-    def __del__(self) -> None:
-        self.close()
-
 
 geonames_db = GeoNamesSqlite()
