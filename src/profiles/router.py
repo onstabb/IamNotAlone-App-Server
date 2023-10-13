@@ -25,7 +25,7 @@ def get_profile(profile: Profile = Depends(get_active_profile_by_id)):
     return profile
 
 
-@router.post(
+@router.put(
     "/me",
     response_model=PrivateProfileOut,
     status_code=status.HTTP_200_OK,
@@ -52,6 +52,7 @@ def edit_profile(profile_data: PrivateProfileIn, response: Response, user: User 
 
     response.status_code = status.HTTP_201_CREATED if user.profile is None else status.HTTP_200_OK
     profile = service.create_or_update_profile(profile_data, user)
+
     return profile
 
 

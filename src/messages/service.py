@@ -79,6 +79,7 @@ def get_dialogs(profile: Profile) -> list[dict]:
                 ]
             }
         },
+        {"$set": {"created_at": {"$toDate": "$_id"},}},
         {"$sort": {"_id": -1}},
         {
             "$group": {
@@ -109,10 +110,11 @@ def get_dialogs(profile: Profile) -> list[dict]:
         {
             "$set": {
                 "profile_name": "$profile.name",
-                "profile_main_photo_url": {"$arrayElemAt": ["$profile.photo_urls", 0]}
+                "profile_main_photo_url": {"$arrayElemAt": ["$profile.photo_urls", 0]},
             }
         },
         {"$unset": "profile"}
 
     ]
+
     return list(Message.objects.aggregate(pipeline))

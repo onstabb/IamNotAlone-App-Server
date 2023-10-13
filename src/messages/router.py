@@ -47,7 +47,8 @@ def get_chat(
 
 @router.get("/dialogs", response_model=list[DialogItemOut])
 def get_dialogs(profile: Profile = Depends(profiles_dependencies.get_active_profile)):
-    return service.get_dialogs(profile)
+    result = service.get_dialogs(profile)
+    return result
 
 
 @router.websocket_route("/listen")
