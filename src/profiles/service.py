@@ -30,12 +30,15 @@ def create_or_update_profile(profile_data: PrivateProfileIn, user: User) -> Prof
     prepared_data['native_city'] = None if not native_city else native_city.to_dbref()
     prepared_data['current_city'] = current_city.to_dbref()
     prepared_data['photo_urls'] = [photo_url.__str__() for photo_url in prepared_data['photo_urls']]
+
+
     if user.profile:
         user.profile.update(**prepared_data)
-        user.profile.save()
+        user.profile.reload()
     else:
         new_profile = Profile(**prepared_data)
         new_profile.save()
         user.profile = new_profile.to_dbref()
         user.save()
+
     return user.profile
