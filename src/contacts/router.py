@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from messages.enums import MessageType
-from messages.notificationmanager import notification_manager
 from contacts import service
 from contacts.enums import ContactState
 from contacts.models import ProfileContact
 from contacts.schemas import RateIn
+from messages.manager import notification_manager
 from profiles import dependencies as profile_dependencies
 from profiles.models import Profile
 from profiles.schemas import PublicProfileOut
@@ -40,6 +40,7 @@ async def rate_profile(rate: RateIn, profile: Profile = Depends(profile_dependen
     service.update_rate(rate, contact, is_initializer)
 
     if contact.status is None and rate.contact == rate.contact.ESTABLISHED:
+        notification_manager.send()
         notification_manager.create_and_send_message(
             contact.initializer, contact.respondent, MessageType.LIKE, None
         )

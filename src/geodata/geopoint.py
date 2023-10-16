@@ -1,8 +1,8 @@
-from typing import Annotated, TypedDict, Literal
+from typing import Annotated, TypedDict, Literal, Sequence
 
-from pydantic import BeforeValidator
+from pydantic import BeforeValidator, WrapValidator
 
-GeoPoint = tuple[float, float] | list[float]
+GeoPoint = Sequence[float]
 
 
 class MongoGeoPoint(TypedDict):
@@ -10,10 +10,10 @@ class MongoGeoPoint(TypedDict):
     coordinates: GeoPoint
 
 
-def _adapt_geo_point(value: MongoGeoPoint | GeoPoint) -> GeoPoint:
+def _adapt_geo_point(value: MongoGeoPoint | GeoPoint, handler) -> GeoPoint:
     if isinstance(value, dict):
         return value["coordinates"]
-    return value
+    return handler(value)
 
 
-GeoPointType = Annotated[GeoPoint, BeforeValidator(_adapt_geo_point)]
+GeoPointType = Annotated[GeoPoint, WrapValidator(_adapt_geo_point)]

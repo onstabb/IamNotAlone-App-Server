@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field, constr, HttpUrl, ConfigDict, AliasChoices
 from messages import config
 from messages.enums import MessageType
 from models import PydanticObjectId, SerializeDocToId
-from profiles.schemas import PublicProfileOut
+from profiles.schemas import PublicProfileOut, PublicProfileSimplified
 
 
 PublicProfileOutId = Annotated[PublicProfileOut, SerializeDocToId]
@@ -21,8 +21,8 @@ class MessageOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: PydanticObjectId = Field(validation_alias=AliasChoices("id", "_id"))
-    sender: PydanticObjectId | PublicProfileOutId = Field(serialization_alias="sender_id")
-    recipient: PydanticObjectId | PydanticObjectId = Field(serialization_alias="recipient_id")
+    sender: PublicProfileSimplified
+    recipient: PublicProfileSimplified
     date: datetime.datetime = Field(validation_alias="created_at",)
     message_type: MessageType
     content_text: str | None

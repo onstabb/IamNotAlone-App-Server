@@ -9,11 +9,7 @@ from profiles.models import Profile
 router = APIRouter(tags=["Events"], prefix="/events")
 
 
-@router.get(
-    "/cities/{city_id}",
-    response_model=list[EventOut],
-    dependencies=[Depends(profile_dependencies.get_active_profile)]
-)
+@router.get("/", response_model=list[EventOut], dependencies=[Depends(profile_dependencies.get_active_profile)])
 def get_actual_events(city_id: str):
     return service.get_actual_events_in_city(city_id)
 
@@ -23,7 +19,7 @@ def get_my_actual_events(profile: Profile = Depends(profile_dependencies.get_act
     return [event for event in profile.events if event.start_at < get_aware_datetime_now()]
 
 
-@router.post("/subscribe/{event_id}", response_model=EventOut)
+@router.patch("/{event_id}", response_model=EventOut)
 def accept_subscriber(event_id: str, profile: Profile = Depends(profile_dependencies.get_active_profile)):
     event = service.get_event(event_id)
     if not event:

@@ -24,13 +24,14 @@ def create_or_update_profile(profile_data: PrivateProfileIn, user: User) -> Prof
     native_city: City | None = None
     if profile_data.native_city:
         native_city = create_city_if_not_exists(profile_data.native_city)
-    if not profile_data.coordinates:
-        profile_data.coordinates = current_city.coordinates
+
     prepared_data = profile_data.model_dump()
     prepared_data['native_city'] = None if not native_city else native_city.to_dbref()
     prepared_data['current_city'] = current_city.to_dbref()
     prepared_data['photo_urls'] = [photo_url.__str__() for photo_url in prepared_data['photo_urls']]
 
+    if not prepared_data.get("coordinates"):
+        prepared_data["coordinates"] = current_city.coordinates
 
     if user.profile:
         user.profile.update(**prepared_data)

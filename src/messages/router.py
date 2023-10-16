@@ -1,18 +1,15 @@
-from json import JSONDecodeError
-
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status, Depends, HTTPException
-from fastapi.concurrency import run_in_threadpool
-
+from fastapi import APIRouter,  status, Depends, HTTPException, Request
+from sse_starlette import EventSourceResponse
 
 from contacts.service import get_contact_by_profile_ids
 from messages import service, config
 from messages.enums import MessageType
-from messages.notificationmanager import notification_manager
+
 from messages.schemas import MessageOut, MessageIn, DialogItemOut
+from messages.manager import notification_manager
 from profiles import dependencies as profiles_dependencies
-from profiles import service as profile_service
 from profiles.models import Profile
-from security import WebSocketJWTBearer
+
 
 router: APIRouter = APIRouter(tags=['Messages'], prefix="/messages")
 
@@ -31,9 +28,11 @@ def send_message(message_in: MessageIn, profile: Profile = Depends(profiles_depe
     if messages_count > config.MAX_SENT_MESSAGES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Limit of the messages has been exceeded")
 
-    return notification_manager.create_and_send_message(
-        profile, other_profile, MessageType.MESSAGE, content_text=message_in.content_text
-    )
+    message = service.create_message(profile, other_profile, MessageType.MESSAGE, message_in.content_text)
+    message_out = MessageOut.model_validate(message)
+    notification_manager.send(message_out, recipient_id=other_profile.id)
+
+    return message_out
 
 
 @router.get("/chat/{profile_id}", response_model=list[MessageOut])
@@ -51,31 +50,7 @@ def get_dialogs(profile: Profile = Depends(profiles_dependencies.get_active_prof
     return result
 
 
-@router.websocket_route("/listen")
-async def websocket_endpoint(websocket: WebSocket) -> None:
-    profile = await run_in_threadpool(profile_service.get_active_profile, profile_id=WebSocketJWTBearer(websocket))
-    if not profile:
-        raise WebSocketDisconnect(code=status.WS_1008_POLICY_VIOLATION, reason="Profile does not exists or disabled")
 
-    await notification_manager.connect(websocket, profile_id=profile.id)
-    try:
-        while True:
-            try:
-                data: dict = await websocket.receive_json(mode="text")
-            except JSONDecodeError:
-                continue
-
-            message_id = data.get("received_message_id")
-            if not message_id:
-                continue
-
-            await run_in_threadpool(
-                service.set_message_as_delivered_by_id, message_id=message_id, recipient_id=profile.id
-            )
-
-    except WebSocketDisconnect:
-        await websocket.close()
-        notification_manager.disconnect(profile_id=profile.id)
-
-
-
+@router.get("/listen")
+async def receive_notifications(request: Request, profile: Profile = Depends(profiles_dependencies.get_active_profile)):
+    return EventSourceResponse(notification_manager.retrieve_events(request, str(profile.id)))

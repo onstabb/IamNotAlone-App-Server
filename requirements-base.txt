@@ -1,5 +1,5 @@
 fastapi~=0.103.1
-pydantic~=2.3.0
+pydantic~=2.4.2
 python-jose~=3.3.0
 mongoengine~=0.27.0
 Pillow~=10.0.1
@@ -13,3 +13,6 @@ pymongo~=4.5.0
 python-multipart~=0.0.6
 pytz~=2023.3
 vincenty~=0.1.4
+sse-starlette~=1.6.5
+
+
