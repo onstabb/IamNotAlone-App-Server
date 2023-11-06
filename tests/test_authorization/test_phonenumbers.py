@@ -29,7 +29,6 @@ def test_correct_phone_number_format(number):
         "symbol",
         "31-32-64",
         "710-050-313",
-        pytest.param("+380950123456", marks=pytest.mark.xfail)
     ]
 )
 def test_incorrect_phone_number_format(number: str):

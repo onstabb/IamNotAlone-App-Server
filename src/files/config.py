@@ -1,6 +1,6 @@
 import os
 
-from src import config as global_config
+import config as global_config
 
 IMAGE_FILES_STATIC_PATH: str = "/static/images"
 IMAGE_FILES_LOCAL_PATH: str = os.path.join(global_config.STATIC_PATH, "images")

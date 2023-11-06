@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Header, HTTPException, status, Depends
 
 
-from authorization import service, dependencies
+from authorization import service
 from authorization.models import User
 from authorization.password import build_password, verify_password
 from authorization.schemas import (
-    SignUpDataIn, TokenDataOut, SmsConfirmationDataIn, SmsConfirmationDataOut, UserOut, UserIn
+    SignUpDataIn, TokenDataOut, SmsConfirmationDataIn, SmsConfirmationDataOut, UserIn
 )
 from authorization.smsservice.telesign import TelesignService
 from security import create_access_token, get_token_expiration_from_now
@@ -57,8 +57,4 @@ def login(user_in: UserIn):
         expires_at=access_token_expires_at,
     )
 
-
-@router.get("/user/me", response_model=UserOut)
-def get_user(user: User = Depends(dependencies.get_unbanned_user)):
-    return user
 

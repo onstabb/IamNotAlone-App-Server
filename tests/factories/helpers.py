@@ -1,5 +1,18 @@
+from typing import Type
+
 from mongoengine import ReferenceField
 from models import BaseDocument
+
+
+
+class Objects:
+
+    def __init__(self, document_cls: Type[BaseDocument], slice_obj: slice):
+        self._doc_cls: Type[BaseDocument] = document_cls
+        self._slice: slice = slice_obj
+
+    def __iter__(self):
+        return iter(self._doc_cls.objects[self._slice])
 
 
 def create_reference_field_documents(document: BaseDocument) -> None:

@@ -1,8 +1,8 @@
 from typing import Annotated, TypedDict, Literal, Sequence
 
-from pydantic import BeforeValidator, WrapValidator
+from pydantic import WrapValidator
 
-GeoPoint = Sequence[float]
+GeoPoint = Sequence[float]  # longitude, latitude
 
 
 class MongoGeoPoint(TypedDict):

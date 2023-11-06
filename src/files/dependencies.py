@@ -1,19 +1,18 @@
-from fastapi import Depends, UploadFile, HTTPException, status
+from fastapi import UploadFile, HTTPException
+from starlette import status
+
+from files import config, service
+from profiles.models import Profile
 
 
-from authorization.dependencies import get_unbanned_user
-from authorization.models import User
-from files import config, service, helpers
-
-
-def upload_photo(photo: UploadFile, user: User = Depends(get_unbanned_user),) -> str:
+def upload_photo(photo: UploadFile, profile: Profile) -> str:
     if photo.content_type not in config.SUPPORTED_IMAGE_MEDIA_TYPES:
         raise HTTPException(
             status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
             detail=f"Expected media type: {config.SUPPORTED_IMAGE_MEDIA_TYPES}"
         )
 
-    image_filename: str = service.save_image_and_create_token(upload_file=photo, subject=str(user.id))
+    image_filename: str = service.save_image_and_create_token(upload_file=photo, subject=str(profile.id))
     if not service.check_image_is_valid(image_filename):
         service.remove_image(image_filename)
         raise HTTPException(
@@ -23,4 +22,3 @@ def upload_photo(photo: UploadFile, user: User = Depends(get_unbanned_user),) ->
 
     service.image_compress(image_filename)
     return f"{config.SERVER_STATIC_URL}/{image_filename}"
-

@@ -41,7 +41,7 @@ class _CityPydanticAnnotation:
             python_schema=core_schema.union_schema(
                 [
                     # core_schema.is_instance_schema(CityRow,),
-                    core_schema.no_info_plain_validator_function(CityRow.model_validate),
+                    # core_schema.no_info_plain_validator_function(CityRow.model_validate),
                     from_int_schema,
                 ]
             ),

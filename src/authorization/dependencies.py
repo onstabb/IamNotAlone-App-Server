@@ -18,5 +18,5 @@ def get_user_by_token(subject: str = Depends(JWTBearer)) -> User:
 
 def get_unbanned_user(user: User = Depends(get_user_by_token)) -> User:
     if user.banned:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User has been banned")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User is banned")
     return user

@@ -21,8 +21,6 @@ def test_verify_and_clear_correct_code(phone_number):
 
 
 def test_verify_and_clear_incorrect_code(phone_number):
-
     code = BaseSmsService.get_code(phone_number)
     assert not BaseSmsService.verify_code_and_clear(phone_number, "wrong")
     assert BaseSmsService.verify_code_and_clear(phone_number, code)
-

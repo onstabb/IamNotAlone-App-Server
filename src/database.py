@@ -5,17 +5,16 @@ import typing
 import mongoengine
 
 from authorization.models import User
-from contacts.models import ProfileContact
 from events.models import Event
-from geodata.models import City
+
 from profiles.models import Profile
 
 
+# TODO: Message -> Profile, ProfileContact -> Profile
 def init_db(**configuration) -> typing.Any:
 
-    Profile.register_delete_rule(City, 'current_city', mongoengine.DO_NOTHING)
-    Profile.register_delete_rule(City, 'native_city', mongoengine.DO_NOTHING)
-    Profile.register_delete_rule(Event, 'events', mongoengine.DO_NOTHING)
+
+    Profile.register_delete_rule(Event, 'events', mongoengine.PULL)
     # Profile.register_delete_rule(ProfileContact, 'initialized_contacts', mongoengine.CASCADE)
 
     User.register_delete_rule(Profile, "profile", mongoengine.CASCADE)

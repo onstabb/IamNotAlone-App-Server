@@ -1,10 +1,9 @@
 import datetime
 from typing import Annotated
 
-from pydantic import BaseModel, Field, constr, HttpUrl, ConfigDict, AliasChoices
+from pydantic import BaseModel, Field, constr, ConfigDict, AliasChoices
 
 from messages import config
-from messages.enums import MessageType
 from models import PydanticObjectId, SerializeDocToId
 from profiles.schemas import PublicProfileOut, PublicProfileSimplified
 
@@ -24,12 +23,5 @@ class MessageOut(BaseModel):
     sender: PublicProfileSimplified
     recipient: PublicProfileSimplified
     date: datetime.datetime = Field(validation_alias="created_at",)
-    message_type: MessageType
-    content_text: str | None
+    content_text: str
 
-
-class DialogItemOut(BaseModel):
-    latest_message: MessageOut
-    profile_id: PydanticObjectId = Field(validation_alias="_id")
-    profile_name: str
-    profile_main_photo_url: HttpUrl

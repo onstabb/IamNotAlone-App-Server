@@ -1,15 +1,11 @@
-from datetime import datetime
-
-from pytz import utc
-
+from datehelpers import get_aware_datetime_now
 from events.models import Event
-from geodata.models import City
 from models import PydanticObjectId
 from profiles.models import Profile
 
 
-def get_actual_events_in_city(city_id: str | City) -> list[Event]:
-    return list(Event.objects(city=city_id, start_at=datetime.now(utc)))
+def get_actual_events_in_city(city_id: int) -> list[Event]:
+    return list(Event.objects(city_id=city_id, start_at__gt=get_aware_datetime_now()))
 
 
 def accept_subscriber(event: Event, profile: Profile) -> Event:

@@ -1,10 +1,8 @@
 import os
-import shutil
 
 import pytest
-from fastapi import UploadFile
+from factory import random
 from fastapi.testclient import TestClient
-from mongomock import MongoClient
 
 
 import config
@@ -35,24 +33,19 @@ def get_auth_headers(user: User) -> dict:
 
 @pytest.fixture(scope="session")
 def seed():
-    yield 131313
+    return 131313
 
 
 @pytest.fixture(scope="session")
 def factory_random(seed):
-    from factory import random
     random.reseed_random(seed)
-    yield random
+    return random
 
 
 @pytest.fixture(scope="session")
-def image_file_storage_conf():
-    storage_dir = os.path.join(DATA_DIR, "Image Storage")
-    if not os.path.exists(storage_dir):
-        os.mkdir(storage_dir)
-    file_config.IMAGE_FILES_LOCAL_PATH = storage_dir
-    yield
-    shutil.rmtree(storage_dir)
+def temp_file_storage(tmp_path_factory):
+    file_config.IMAGE_FILES_LOCAL_PATH = tmp_path_factory.mktemp("data")
+    return file_config.IMAGE_FILES_LOCAL_PATH
 
 
 @pytest.fixture(scope="session")
@@ -70,13 +63,6 @@ def city_db():
 
 
 @pytest.fixture(scope="session")
-def db_mock_config():
-    db = init_db(host=config.DB_HOST, db=config.DB_NAME, mongo_client_class=MongoClient, )
-    yield db
-    close_db()
-
-
-@pytest.fixture(scope="session")
 def db_config(factory_random):
     db = init_db(host=config.DB_HOST, db=config.DB_NAME)
     _db_clear(db)
@@ -85,46 +71,37 @@ def db_config(factory_random):
     close_db()
 
 
-@pytest.fixture()
-def client(db_config, scheduler, city_db, image_file_storage_conf):
+@pytest.fixture(scope="session")
+def client(db_config, scheduler, city_db, temp_file_storage):
     auth_config.SMS_SERVICE_DISABLED = True
     client = TestClient(app=app)
     yield client
+    client.close()
 
 
 @pytest.fixture(scope="session")
 def user_factory(db_config, city_db):
     from factories.factories import UserFactory
-    yield UserFactory
+    return UserFactory
 
 
 @pytest.fixture(scope="session")
-def _prepare_test_user_auth(user_factory):
-    user = user_factory.create(profile=None)
-
-    yield get_auth_headers(user), user
+def _prepare_test_user_auth(user_factory) -> tuple[dict, User]:
+    user: User = user_factory.create(profile=None)
+    return get_auth_headers(user), user
 
 
 @pytest.fixture(scope="session")
-def authorization_user_only(_prepare_test_user_auth):
+def auth_headers_user_without_profile(_prepare_test_user_auth):
     headers, user = _prepare_test_user_auth
-    yield headers
+    return headers
 
 
 @pytest.fixture(scope="session")
-def user_image_url(_prepare_test_user_auth):
-    headers, user = _prepare_test_user_auth
-    filename = "Test2.png"
-    upload_file = UploadFile(open(os.path.join(DATA_DIR, "images", filename), "rb"), filename=filename,)
-    token = file_service.save_image_and_create_token(upload_file, user.id)
-    yield f"{file_config.SERVER_STATIC_URL}/{token}"
-
-
-@pytest.fixture(scope="session")
-def authorization(_prepare_test_user):
+def authorization(_prepare_test_user_auth):
     from factories.factories import ProfileFactory
-    headers, user = _prepare_test_user
+    headers, user = _prepare_test_user_auth
     profile = ProfileFactory.create()
     user.profile = profile
     user.save()
-    yield headers
+    return headers

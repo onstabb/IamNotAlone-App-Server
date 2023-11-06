@@ -13,12 +13,15 @@ CONTACT_RESULT_TABLE = (
 
 
 class ProfileContact(BaseDocument):
-    initializer = ReferenceField('Profile', required=True)
+    initiator = ReferenceField('Profile', required=True)
     respondent = ReferenceField('Profile', required=True)
-    initializer_state = EnumField(ContactState, null=True)  # type: ContactState | None
+    initiator_state = EnumField(ContactState, null=True)  # type: ContactState | None
     respondent_state = EnumField(ContactState, null=True)  # type: ContactState | None
     status = EnumField(ContactState, null=True)  # type: ContactState | None
 
+    meta = {
+        "indexes": [{"fields": ["initiator", "respondent"], "unique": True}]
+    }
     @property
     def is_established(self) -> bool:
         return self.status == ContactState.ESTABLISHED

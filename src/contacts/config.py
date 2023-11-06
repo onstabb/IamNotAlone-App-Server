@@ -1,3 +1,0 @@
-
-
-CANDIDATES_LIMIT: int = 1

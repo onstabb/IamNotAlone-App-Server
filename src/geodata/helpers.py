@@ -1,5 +1,3 @@
-import math
-
 from vincenty import vincenty
 
 from geodata.geopoint import GeoPoint

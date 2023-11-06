@@ -6,13 +6,12 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 from fastapi import UploadFile
+from pydantic import HttpUrl
 
 from files import config
 from files.helpers import get_image_filename_from_url, file_token_create
 
 
-if typing.TYPE_CHECKING:
-    from files.imageurl import ImageUrl
 
 
 log = logging.getLogger(__file__)
@@ -38,7 +37,7 @@ def get_image_file_dir(image_filename: str) -> str:
     return os.path.join(config.IMAGE_FILES_LOCAL_PATH, image_filename)
 
 
-def image_exists(image_url: typing.Union[str, 'ImageUrl']) -> bool:
+def image_exists(image_url: typing.Union[str, HttpUrl]) -> bool:
     image_filename: str = get_image_filename_from_url(image_url)
     return image_exists_from_filename(image_filename)
 

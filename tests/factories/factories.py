@@ -6,12 +6,14 @@ from factory import fuzzy
 from authorization.models import User
 from contacts import service as contact_service
 from contacts.models import ProfileContact, ContactState
-from messages.models import Message, MessageType
+from geodata.models import Location
+from messages.models import Message
 from profiles import config as profile_config
 from profiles.enums import Gender, ResidenceLength, ResidencePlan
 from profiles.models import Profile
 
 from tests.factories import generators
+from tests.factories.helpers import Objects
 
 
 class UserFactory(factory.mongoengine.MongoEngineFactory,):
@@ -25,8 +27,17 @@ class UserFactory(factory.mongoengine.MongoEngineFactory,):
     @classmethod
     def insert_many(cls, size, **kwargs) -> None:
         instances_built = cls.build_batch(size, **kwargs)
+
         Profile.objects.insert([user.profile for user in instances_built], load_bulk=False)
         cls._meta.model.objects.insert(instances_built, load_bulk=False)
+
+
+class LocationFactory(factory.mongoengine.MongoEngineFactory):
+    class Meta:
+        model = Location
+
+    city_coordinates = factory.LazyFunction(lambda: generators.get_random_city().coordinates)
+    coordinates = factory.SelfAttribute("city_coordinates")
 
 
 class ProfileFactory(factory.mongoengine.MongoEngineFactory):
@@ -38,9 +49,9 @@ class ProfileFactory(factory.mongoengine.MongoEngineFactory):
         start_date=datetime.date.today() - datetime.timedelta(days=365 * profile_config.MAX_AGE),
         end_date=datetime.date.today() - datetime.timedelta(days=365 * profile_config.MIN_AGE),
     )
-    current_city = factory.LazyFunction(generators.create_random_city)
-    native_city = factory.LazyFunction(generators.create_random_city)
-    coordinates = factory.LazyAttribute(lambda self: self.current_city.coordinates)
+    current_city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
+    native_city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
+
     gender = factory.Iterator(Gender)
     gender_preference = factory.Iterator([None] + [gender for gender in Gender])
     description = factory.Faker("paragraph", nb_sentences=2)
@@ -48,7 +59,8 @@ class ProfileFactory(factory.mongoengine.MongoEngineFactory):
     residence_length = factory.Iterator(ResidenceLength)
     photo_urls = factory.List([factory.Faker("image_url")])
 
-    disabled = fuzzy.FuzzyChoice((True, True, True, False))
+    location = factory.SubFactory(LocationFactory)
+    disabled = fuzzy.FuzzyChoice((False, False, False, True))
 
 
 class ContactFactory(factory.mongoengine.MongoEngineFactory):
@@ -56,12 +68,12 @@ class ContactFactory(factory.mongoengine.MongoEngineFactory):
     class Meta:
         model = ProfileContact
 
-    initializer = factory.Iterator(Profile.objects[:1])
-    respondent = factory.Iterator(Profile.objects[1:])
-    initializer_state = factory.Iterator([contact for contact in ContactState] + [None])
+    initiator = factory.Iterator(Objects(Profile, slice(1)))
+    respondent = factory.Iterator(Objects(Profile, slice(1, None)))
+    initiator_state = factory.Iterator([contact for contact in ContactState] + [None])
     respondent_state = factory.Iterator([contact for contact in ContactState] + [None])
     status = factory.LazyAttribute(
-        lambda contact: contact_service.get_contact_status(contact.initializer_state, contact.respondent_state)
+        lambda contact: contact_service.get_contact_status(contact.initiator_state, contact.respondent_state)
     )
 
 
@@ -72,8 +84,6 @@ class MessageFactory(factory.mongoengine.MongoEngineFactory):
         model = Message
 
     content_text = factory.Faker("paragraph", nb_sentences=4)
-    sender = factory.Iterator(Profile.objects[:1])
-    recipient = factory.Iterator(Profile.objects[1:])
-    message_type = MessageType.MESSAGE
-    delivered = True
+    sender = factory.Iterator(Objects(Profile, slice(1)))
+    recipient = factory.Iterator(Objects(Profile, slice(1, None)))
     has_read = fuzzy.FuzzyChoice((True, False))

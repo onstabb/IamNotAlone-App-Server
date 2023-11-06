@@ -16,7 +16,6 @@ def test_signup(client, generated_phone_number):
     assert data.get("sms_expires_at")
 
 
-
 def test_confirm_sms(client, generated_phone_number):
     from authorization.smsservice.baseservice import BaseSmsService
 
@@ -31,6 +30,7 @@ def test_confirm_sms(client, generated_phone_number):
     assert response.status_code == 200
     assert data_response.get("access_token")
     assert new_password
+
 
 def test_incorrect_login(client, generated_phone_number):
     password = "incorrect"

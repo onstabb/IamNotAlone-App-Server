@@ -1,120 +1,158 @@
 from mongoengine import Q as MQ
 
-from messages.enums import MessageType
+from contacts.enums import ContactState
 from messages.models import Message
 from models import PydanticObjectId
 from profiles.models import Profile
 
 
-def create_message(sender: Profile, recipient: Profile, message_type: MessageType, content_text: str | None) -> Message:
-
-    message = Message(sender=sender, recipient=recipient, message_type=message_type, content_text=content_text)
+def create_message(sender: Profile, recipient: Profile, content_text: str) -> Message:
+    message = Message(sender=sender, recipient=recipient, content_text=content_text)
     message.save()
     return message
 
 
 def get_chat(
-        first_profile: Profile | str,
-        second_profile: Profile | str,
-        message_type: None | MessageType,
+        first_profile: Profile | str | PydanticObjectId, second_profile: Profile | str | PydanticObjectId
 ) -> list[Message]:
-
     query = ((MQ(sender=first_profile) & MQ(recipient=second_profile)) |
              (MQ(recipient=first_profile) & MQ(sender=second_profile)))
-
-    if message_type:
-        query &= MQ(message_type=message_type)
-
     return list(Message.objects(query))
 
 
-
-def get_messages_count(sender: Profile | str, recipient: Profile | str, message_type: MessageType) -> int:
-
-    return len(Message.objects(message_type=message_type, sender=sender, recipient=recipient))
+def get_messages_count(sender: Profile | str, recipient: Profile | str) -> int:
+    return len(Message.objects(sender=sender, recipient=recipient))
 
 
-def get_message_by_id(message_id: str, recipient: Profile | None = None) -> Message | None:
-    query = {"id": message_id}
-    if recipient:
-        query.update(recipient=recipient)
-
-    return Message.get_one(**query)
-
-def set_message_as_delivered(message: Message) -> Message:
-
-    if message.delivered:
-        return message
-
-    message.delivered = True
-    message.save()
-    return message
-
-
-def set_message_as_delivered_by_id(message_id: str | PydanticObjectId, recipient_id: str | PydanticObjectId) -> None:
-    message = get_message_by_id(message_id)
-
-    if not message:
-        return
-
-    if recipient_id != message.recipient.id:
-        return
-
-    set_message_as_delivered(message)
-
-
-def get_dialogs(profile: Profile) -> list[dict]:
-
+def get_dialogs(profile: Profile | PydanticObjectId) -> list[dict]:
+    profile_id: PydanticObjectId = profile.id if isinstance(profile, Profile) else profile
     pipeline = [
+        {
+            "$lookup": {
+                "from": "profile_contact",
+                "let": {
+                    "senderId": "$sender",
+                    "recipientId": "$recipient"
+                },
+                "pipeline": [
+                    {
+                        "$match": {
+                            "$expr": {
+                                "$and": [
+                                    {
+                                        "$or": [
+                                            {
+                                                "$and": [
+                                                    {
+                                                        "$eq": ["$initiator", "$$senderId"]
+                                                    },
+                                                    {
+                                                        "$eq": ["$respondent", "$$recipientId"]
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "$and": [
+                                                    {
+                                                        "$eq": ["$initiator", "$$recipientId"]
+                                                    },
+                                                    {
+                                                        "$eq": ["$respondent", "$$senderId"]
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "$eq": ["$status", ContactState.ESTABLISHED]
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "as": "contact"
+            }
+        },
         {
             "$match": {
                 "$or": [
-                    {"$and": [{"recipient": profile.id}, {"message_type": MessageType.LIKE.value}]},
-
-                    {"$and": [
-                        {"$or": [{"recipient": profile.id}, {"sender": profile.id}]},
-                        {"message_type": {"$in":  [MessageType.MESSAGE.value, MessageType.CONTACT_ESTABLISHED.value]}}
-                        ]
-                    },
-                ]
+                    {"sender": profile_id},
+                    {"recipient": profile_id}
+                ],
+                "contact": {"$ne": []}
             }
         },
-        {"$set": {"created_at": {"$toDate": "$_id"},}},
-        {"$sort": {"_id": -1}},
         {
-            "$group": {
-                "_id": {
-                    "$cond": [
-                        {"$eq": ["$recipient", profile.id]},
-                        "$sender",
-                        "$recipient"
-                    ]
-                },
-                "latest_message": {
-                    "$first": "$$ROOT"
+            "$unwind": "$contact"
+        },
+        {
+            "$set": {
+                "created_at": {
+                    "$toDate": "$_id"
                 }
             }
         },
-
+        {
+            "$sort": {"_id": -1}
+        },
         {
             "$lookup": {
                 "from": "profile",
-                "localField": "_id",
+                "localField": "sender",
                 "foreignField": "_id",
-                "as": "profile"
+                "as": "sender_profile"
             }
         },
-
-        {"$unwind": "$profile"},
-
         {
-            "$set": {
-                "profile_name": "$profile.name",
-                "profile_main_photo_url": {"$arrayElemAt": ["$profile.photo_urls", 0]},
+            "$unwind": "$sender_profile"
+        },
+        {
+            "$lookup": {
+                "from": "profile",
+                "localField": "recipient",
+                "foreignField": "_id",
+                "as": "recipient_profile"
             }
         },
-        {"$unset": "profile"}
-
+        {
+            "$unwind": "$recipient_profile"
+        },
+        {
+            "$group": {
+                "_id": {
+                    "$cond": {
+                        "if": {"$eq": ["$sender", profile_id]},
+                        "then": "$recipient",
+                        "else": "$sender"
+                    }
+                },
+                "lastMessage": {"$first": "$$ROOT"},
+                "sender_profile": {
+                    "$first": {
+                        "_id": "$sender_profile._id",
+                        "name": "$sender_profile.name",
+                        "photo": {"$arrayElemAt": ["$sender_profile.photo_urls", 0]}
+                    }
+                },
+                "recipient_profile": {
+                    "$first": {
+                        "_id": "$recipient_profile._id",
+                        "name": "$recipient_profile.name",
+                        "photo": {"$arrayElemAt": ["$recipient_profile.photo_urls", 0]}
+                    }
+                }
+            }
+        },
+        {
+            "$project": {
+                "_id": "$lastMessage._id",
+                "sender": "$sender_profile",
+                "recipient": "$recipient_profile",
+                "content_text": "$lastMessage.content_text",
+                "created_at": "$lastMessage.created_at"
+            }
+        }
     ]
 
     return list(Message.objects.aggregate(pipeline))

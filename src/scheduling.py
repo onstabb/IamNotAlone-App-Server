@@ -4,5 +4,6 @@ from apscheduler.jobstores.memory import MemoryJobStore
 
 from pytz import utc
 
+
 scheduler = BackgroundScheduler(jobstores={"sms_service": MemoryJobStore()}, timezone=utc)
 

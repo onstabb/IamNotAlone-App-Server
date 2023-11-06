@@ -23,7 +23,6 @@ class BaseSmsService(ABC):
 
     @classmethod
     def _clear_task(cls, task_key: MobilePhoneNumber) -> None:
-
         job: Job | None = scheduler.get_job(task_key, jobstore="sms_service")
         if job:
             scheduler.remove_job(task_key, jobstore="sms_service")
@@ -61,7 +60,7 @@ class BaseSmsService(ABC):
     def __remove_code(cls, phone_number: MobilePhoneNumber) -> None:
         cls._storage.pop(phone_number, "")
 
-        SmsServiceLogger.debug(f"Phone number {phone_number} data cleared")
+        SmsServiceLogger.debug(f"Phone number {phone_number} profile_data cleared")
 
     @classmethod
     @abstractmethod

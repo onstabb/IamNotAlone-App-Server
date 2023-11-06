@@ -69,6 +69,7 @@ class BaseDocument(Document):
 
 
 SerializeDocToId = PlainSerializer(lambda doc: doc.id, return_type=str, when_used="json")
+ProfileIdQuery = PydanticObjectId | typing.Literal["my"]
 
 class LocationPointMixin:
     coordinates: 'GeoPoint' = PointField(required=True, )

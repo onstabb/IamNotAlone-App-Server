@@ -3,7 +3,7 @@ __all__ = ("geonames_db",)
 import logging
 from sqlite3 import connect, Connection, Cursor
 
-from src import config
+import config
 from geodata import helpers
 from geodata.geopoint import GeoPoint
 from geodata.cityrow import CityRow
@@ -138,7 +138,7 @@ GROUP BY
         return result.fetchone()
 
     def get_city_count(self) -> int:
-        return self.__cursor.execute("SELECT COUNT(*) FROM city").fetchone()
+        return self.__cursor.execute("SELECT COUNT(geonameid) FROM city").fetchone()
 
     def close(self) -> None:
         self.__cursor.close()
@@ -147,3 +147,4 @@ GROUP BY
 
 
 geonames_db = GeoNamesSqlite()
+

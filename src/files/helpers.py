@@ -6,10 +6,9 @@ import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
+from pydantic import HttpUrl
 from pydantic_core import Url
 from pytz import utc
-
-from files.imageurl import ImageUrl
 
 
 def file_token_generate(n_bytes: int = 16) -> str:
@@ -30,7 +29,7 @@ def file_token_decode(token: str) -> tuple[FileTokenSubject, datetime]:
     return data['subject'], data['created_at']
 
 
-def get_image_filename_from_url(image_url: typing.Union['ImageUrl', str]) -> str:
+def get_image_filename_from_url(image_url: typing.Union[HttpUrl, str]) -> str:
 
     if isinstance(image_url, Url):
         data_path = image_url.path

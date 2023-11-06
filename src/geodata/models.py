@@ -1,13 +1,10 @@
-__all__ = ('City',)
-
-from mongoengine import IntField, StringField
-
-from models import BaseDocument, LocationPointMixin
+from mongoengine import EmbeddedDocument, PointField, EmbeddedDocumentField
 
 
-class City(BaseDocument, LocationPointMixin):
-    geonameid: int = IntField(primary_key=True)
-    name: str = StringField(required=True)
-    administrative_unit_name: str = StringField(required=True)
-    country_name: str = StringField(required=True)
-    country_code: str = StringField(required=True)
+class Location(EmbeddedDocument):
+    city_coordinates = PointField()
+    coordinates = PointField()
+
+
+class LocationMixin:
+    location = EmbeddedDocumentField(Location, required=True, default=Location)

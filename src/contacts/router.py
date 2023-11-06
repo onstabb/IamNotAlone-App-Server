@@ -1,56 +1,75 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 
-from messages.enums import MessageType
 from contacts import service
-from contacts.enums import ContactState
+from contacts.enums import ContactState, ContactType
 from contacts.models import ProfileContact
-from contacts.schemas import RateIn
-from messages.manager import notification_manager
-from profiles import dependencies as profile_dependencies
-from profiles.models import Profile
-from profiles.schemas import PublicProfileOut
+from contacts.schemas import ContactStateIn, ContactCreateDataIn, ContactOut
+from notifications.enums import NotificationType
+from notifications.manager import notification_manager
+from profiles.dependencies import CurrentActiveProfileByToken, get_active_target_profile, ActiveTargetProfileById
 
 
-router = APIRouter(tags=['Contact'], prefix="/contacts")
+router = APIRouter()
 
 
-@router.get("/select", response_model=list[PublicProfileOut])
-def select_candidates(profile: Profile = Depends(profile_dependencies.get_active_profile)):
-    result = service.get_candidates(profile)
-    return result
+@router.get("/", response_model=list[ContactOut])
+def get_contacts(
+    current_profile: CurrentActiveProfileByToken, contact_type: ContactType = Query(alias="contactType"),
+):
+
+    if contact_type == ContactType.NEW_ESTABLISHED:
+        return service.get_new_established_contacts(current_profile)
 
 
-@router.post("/rate")
-async def rate_profile(rate: RateIn, profile: Profile = Depends(profile_dependencies.get_active_profile)):
+    return service.get_profile_likes(current_profile)
 
-    other_profile: Profile = profile_dependencies.get_active_profile_by_id(rate.profile_id)
-    contact: ProfileContact | None = service.get_contact(profile, other_profile)
+
+@router.post("/", response_model=ContactOut, status_code=status.HTTP_201_CREATED)
+def create_contact(data_in: ContactCreateDataIn, current_profile: CurrentActiveProfileByToken):
+
+    if data_in.profile_id == current_profile.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="You cannot create contact with yourself",
+        )
+    target_profile = get_active_target_profile(profile_id=data_in.profile_id)
+    contact: ProfileContact | None = service.get_contact_by_profile_ids(current_profile.id, target_profile.id)
+
+    if contact:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=f"Contact with profile `{target_profile.id}` already exists"
+        )
+
+    contact = service.create_contact_by_initiator(current_profile, target_profile, data_in)
+    if data_in.action == ContactState.ESTABLISHED:
+        notification_manager.send(
+            ContactOut.model_validate(contact, from_attributes=True), target_profile.id, NotificationType.LIKE
+        )
+
+    return contact
+
+
+@router.patch("/{profile_id}", response_model=ContactOut)
+def update_contact_state(
+        target_profile: ActiveTargetProfileById,
+        current_profile: CurrentActiveProfileByToken,
+        state_data: ContactStateIn,
+):
+
+    contact = service.get_contact_by_profile_ids(current_profile.id, target_profile.id)
 
     if not contact:
-        contact = service.create_contact(initializer=profile, respondent=other_profile)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact doesn't exists")
 
-    if contact.status is not None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Contact are already defined")
+    if contact.status == ContactState.BLOCKED:
+        return contact
 
-    profile_state: ContactState | None = service.get_profile_state(profile, contact)
-    if profile_state is not None:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="The choice has already been made")
+    if contact.status and state_data.action != ContactState.BLOCKED:
+        return contact
 
-    is_initializer = contact.initializer == profile
-    service.update_rate(rate, contact, is_initializer)
+    service.update_contact_status(state_data, current_profile, contact)
 
-    if contact.status is None and rate.contact == rate.contact.ESTABLISHED:
-        notification_manager.send()
-        notification_manager.create_and_send_message(
-            contact.initializer, contact.respondent, MessageType.LIKE, None
+    if contact.is_established and current_profile == contact.respondent:
+        notification_manager.send(
+            ContactOut.model_validate(contact), contact.initiator, NotificationType.CONTACT_ESTABLISHED
         )
-
-    elif contact.is_established:
-        notification_manager.create_and_send_message(
-            contact.initializer, contact.respondent, MessageType.CONTACT_ESTABLISHED, None
-        )
-        notification_manager.create_and_send_message(
-            contact.respondent, contact.initializer, MessageType.CONTACT_ESTABLISHED, None
-        )
-
-    return {"detail": "OK"}
+    return contact

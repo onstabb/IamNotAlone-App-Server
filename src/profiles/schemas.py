@@ -1,8 +1,7 @@
 from typing import Annotated
 
-from pydantic import BaseModel, constr, Field, AliasChoices, conlist, HttpUrl, ConfigDict, WrapValidator
+from pydantic import BaseModel, constr, Field, AliasChoices, HttpUrl, ConfigDict, WrapValidator
 
-from files.imageurl import ImageUrl
 from geodata.citygeonames import CityGeonames
 from geodata.geopoint import GeoPointType
 from models import PydanticObjectId
@@ -20,8 +19,10 @@ MainPhoto = Annotated[
     WrapValidator(lambda value, handler: value[0] if isinstance(value, list) and len(value) > 0 else handler(value))
 ]
 
+
 class _ProfileBase(BaseModel):
     name: ProfileName
+
 
 class _ProfileFullBase(_ProfileBase):
     gender: Gender
@@ -37,40 +38,33 @@ class _ProfileOutBase(_ProfileBase):
 
 class _ProfileFullOutBase(_ProfileOutBase, _ProfileFullBase):
     photo_urls: list[HttpUrl]
-    current_city_id: int | CityGeonames = Field(
-        validation_alias=AliasChoices("current_city", "current_city_id")
-    )
-    native_city_id: int | None | CityGeonames = Field(
-        validation_alias=AliasChoices("native_city", "native_city_id")
-    )
+    current_city_id: int | CityGeonames
+    native_city_id: int | None
 
 
 class PrivateProfileIn(_ProfileFullBase):
     birthday: DateOfBirth
     coordinates: GeoPointType | None = None
-    photo_urls: conlist(ImageUrl, max_length=model_config.MAX_PROFILE_PHOTOS, min_length=1)
     current_city: CityGeonames = Field(
         serialization_alias="current_city_id",
-        validation_alias=AliasChoices("current_city_id", "current_city")
+        validation_alias="current_city_id"
     )
     native_city: CityGeonames | None = Field(
         serialization_alias="native_city_id",
-        validation_alias=AliasChoices("native_city_id", "native_city"),
+        validation_alias="native_city_id",
         default=None
     )
 
 
 class PrivateProfileOut(_ProfileFullOutBase):
     birthday: DateOfBirth
-    photo_urls: list[HttpUrl]
 
 
 class PublicProfileSimplified(_ProfileOutBase):
-    profile_photo: MainPhoto
+    profile_photo_url: MainPhoto = Field(validation_alias="photo_urls")
 
 
 class PublicProfileOut(_ProfileFullOutBase):
     model_config = ConfigDict(from_attributes=True)
 
     age: Age = Field(validation_alias=AliasChoices("birthday", "age"))
-
