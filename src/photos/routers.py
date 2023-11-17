@@ -38,9 +38,10 @@ def update_profile_photo(
         )
 
     compressed_image = helpers.image_compress(photo.file)
+    extension: str = photo.filename.split(".")[-1]
     image_url = service.get_bucket().upload(
         compressed_image,
-        filename=helpers.filename_token_encode(photo.filename, user_id=str(current_user.id), index=list_index),
+        filename=helpers.filename_token_encode(extension, user_id=str(current_user.id), index=list_index),
         ContentType=photo.content_type
     )
 

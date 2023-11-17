@@ -10,17 +10,14 @@ from PIL import Image, UnidentifiedImageError
 from pydantic import HttpUrl, Json
 from pydantic_core import Url
 
-
 from photos import config
 
 
 log = logging.getLogger(__file__)
 
 
-def filename_token_encode(filename: str, **additional_data: Json) -> str:
-    additional_data.update(filename=filename)
+def filename_token_encode(extension: str, **additional_data: Json) -> str:
     data = json.dumps(additional_data, ensure_ascii=True)
-    extension = filename.split(".")[-1]
     return f'{base64.b64encode(data.encode(encoding="ascii")).decode("ascii")}.{extension}'
 
 
@@ -55,15 +52,14 @@ def check_image_is_valid(file: typing.BinaryIO) -> bool:
 
 
 def image_compress(
-            file: typing.BinaryIO, *,
-            percent: int = config.FILE_IMAGE_COMPRESSION_PERCENT,
-            max_pixel_size: int = config.FILE_IMAGE_MAX_PIXEL_SIZE,
-    ) -> TemporaryFile:
-
-    """ Creates a temporary file with compressed image """
+        file: typing.BinaryIO, *,
+        percent: int = config.FILE_IMAGE_COMPRESSION_PERCENT,
+        max_pixel_size: int = config.FILE_IMAGE_MAX_PIXEL_SIZE,
+    ) -> typing.BinaryIO:
+    """ Creates a temporary file with compressed JPEG image """
 
     original_image: Image = Image.open(file)
-    temp_file = TemporaryFile(suffix=f'.{original_image.format.lower()}')
+    temp_file = TemporaryFile(suffix=f'.jpg')
 
     if max_pixel_size:
         width, height = original_image.size
@@ -84,7 +80,7 @@ def image_compress(
             original_image = original_image.resize((int(width * reduce_factor), int(height * reduce_factor)))
 
     quality: int = 100 - percent
-    original_image.save(temp_file, original_image.format, quality=quality, optimize=True)
+    original_image.save(temp_file, format="jpeg", quality=quality, optimize=True)
     original_image.close()
     temp_file.seek(0)
     return temp_file

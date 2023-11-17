@@ -9,7 +9,7 @@ if not IMAGE_FILES_LOCAL_PATH.exists():
     IMAGE_FILES_LOCAL_PATH.mkdir()
 
 SERVER_STATIC_IMAGES_URL = f'{global_config.SERVER_URL}/static/images'
-SUPPORTED_IMAGE_FORMATS = ('jpeg', 'jpg', 'bmp', 'png')
+SUPPORTED_IMAGE_FORMATS = ('jpeg', 'jpg')
 SUPPORTED_IMAGE_MEDIA_TYPES = tuple(f'image/{img_format}' for img_format in SUPPORTED_IMAGE_FORMATS)
 FILE_TOKEN_LENGTH = 24
 FILE_IMAGE_COMPRESSION_PERCENT: int = 50

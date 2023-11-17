@@ -10,7 +10,7 @@ from photos import helpers
 )
 def test_token_encoding(filename):
     data = {"filename": filename, "num": 322}
-    encoded_filename = helpers.filename_token_encode(**data)
+    encoded_filename = helpers.filename_token_encode("jpg", **data)
     decoded_data = helpers.filename_token_decode(encoded_filename)
     assert data == decoded_data
 

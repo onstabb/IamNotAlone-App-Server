@@ -15,8 +15,6 @@ if not STATIC_PATH.exists():
 
 SERVER_URL: str = os.getenv("SERVER_URL", "http://127.0.0.1:8000")
 
-DB_USER: str = os.getenv("DB_USER", "admin")
-DB_PASSWORD: str = os.getenv("DB_PASSWORD", "secretmongo")
 DB_NAME: str = os.getenv("DB_NAME", "iamnotalone")
 DB_HOST: str = os.getenv("DB_HOST", "localhost")
 
