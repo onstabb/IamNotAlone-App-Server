@@ -70,10 +70,10 @@ def get_candidates(user: User, limit: int = 1) -> list[dict]:
             {"age_difference":
                  {"$abs":
                       {"$dateDiff":
-                           {"endDate": "$profile.birthday",
+                           {"endDate": "$profile.birthdate",
 
                             "startDate": datetime(
-                                user.profile.birthday.year, user.profile.birthday.month, user.profile.birthday.day
+                                user.profile.birthdate.year, user.profile.birthdate.month, user.profile.birthdate.day
                             ),
                             "unit": "year",
                             },

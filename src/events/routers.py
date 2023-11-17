@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Query
 
 from datehelpers import get_aware_datetime_now
 from events import service
@@ -12,13 +12,13 @@ user_router = APIRouter()
 
 
 @router.get("", response_model=list[EventOut])
-def get_actual_events(city_id: int):
-    return service.get_actual_events_in_city(city_id)
+def get_events(city_id: int, only_future: bool = Query(alias="onlyFuture", default=True)):
+    return service.get_events_by_city_id(city_id, only_future=only_future)
 
 
 @router.patch("/{event_id}", response_model=EventOut)
 def accept_subscriber(event_id: PydanticObjectId, current_user: CurrentActiveCompletedUser):
-    event = service.get_event(event_id)
+    event = service.get_event_by_id(event_id)
     if not event:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
 

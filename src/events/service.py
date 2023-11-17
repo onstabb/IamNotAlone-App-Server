@@ -1,11 +1,15 @@
+from bson import ObjectId
+
 from datehelpers import get_aware_datetime_now
 from events.models import Event
-from models import PydanticObjectId
 from users.models import User
 
 
-def get_actual_events_in_city(city_id: int) -> list[Event]:
-    result = Event.objects(city_id=city_id, start_at__gt=get_aware_datetime_now())
+def get_events_by_city_id(city_id: int, **filters) -> list[Event]:
+    if filters.pop("only_future", None):
+        filters.update(start_at__gt=get_aware_datetime_now())
+
+    result = Event.objects(location__city_id=city_id, **filters).exclude("subscribers")
     return list(result)
 
 
@@ -21,5 +25,5 @@ def accept_subscriber(event: Event, user: User) -> Event:
     return event
 
 
-def get_event(event_id: PydanticObjectId | str) -> Event | None:
+def get_event_by_id(event_id: ObjectId | str) -> Event | None:
     return Event.get_one(id=event_id)

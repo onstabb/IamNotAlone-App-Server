@@ -10,6 +10,7 @@ class Location(EmbeddedDocument):
 
     city_id = IntField()    # type: int
     current = PointField(auto_index=False)  # type: GeoPoint
+    address = StringField(null=True)
 
     @property
     def current_geo_json(self) -> MongoGeoPoint:
@@ -17,14 +18,5 @@ class Location(EmbeddedDocument):
             return self.current
         return {"type": "Point", "coordinates": self.current}
 
-
-class LocationWithAddress(Location):
-    address = StringField(required=True)    # type: str
-
-
 class LocationMixin:
     location = EmbeddedDocumentField(Location, required=True, default=Location) # type: Location
-
-
-class LocationWithAddressMixin:
-    location = EmbeddedDocumentField(LocationWithAddress, required=True, default=LocationWithAddress)    # type: LocationWithAddress

@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, AliasChoices, constr, model_validator
 from location.geopoint import GeoPoint
 from location.schemas import LocationProjectBase
 from userprofile import config as model_config
-from userprofile.dateofbirth import DateOfBirth, Age
+from userprofile.birthdate import BirthDate, Age
 
 from userprofile.enums import Gender, ResidenceLength, ResidencePlan
 
@@ -40,7 +40,7 @@ class UserProfileBase(BaseModel):
 
 
 class PrivateUserProfileIn(UserProfileBase):
-    birthday: DateOfBirth
+    birthdate: BirthDate
     location: LocationIn
 
 
@@ -49,5 +49,5 @@ class PrivateUserProfileOut(PrivateUserProfileIn):
 
 
 class PublicUserProfileOut(UserProfileBase):
-    age: Age = Field(validation_alias=AliasChoices("birthday", "age"))
+    age: Age = Field(validation_alias=AliasChoices("birthdate", "age"))
     location: LocationOut

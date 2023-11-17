@@ -6,6 +6,7 @@ from factory import fuzzy
 
 from contacts import service as contact_service
 from contacts.models import Contact, Message, ContactState
+from events.models import Event
 from factories.helpers import build_json_dict
 from location.database import geonames_db
 from location.models import Location
@@ -46,6 +47,8 @@ class UserFactory(_BaseMongoEngineFactory):
         )
 
 
+
+
 class LocationFactory(_BaseMongoEngineFactory):
     class Meta:
         model = Location
@@ -59,7 +62,7 @@ class ProfileFactory(_BaseMongoEngineFactory):
         model = UserProfile
 
     name = factory.Faker("user_name")
-    birthday = fuzzy.FuzzyDate(
+    birthdate = fuzzy.FuzzyDate(
         start_date=datetime.date.today() - datetime.timedelta(days=365 * profile_config.MAX_AGE),
         end_date=datetime.date.today() - datetime.timedelta(days=365 * profile_config.MIN_AGE),
     )
@@ -113,3 +116,28 @@ class MessageFactory(_BaseMongoEngineFactory):
         model = Message
 
     text = factory.Faker("paragraph", nb_sentences=4)
+
+
+class EventFactory(_BaseMongoEngineFactory):
+    class Meta:
+        model = Event
+
+    title = factory.Faker("catch_phrase")
+    description = factory.Faker("paragraph", nb_sentences=5)
+    location = factory.SubFactory(LocationFactory, address=factory.Faker("address"))
+    start_at = factory.Faker("date_time_this_decade")
+    image_urls = factory.List([factory.Faker("image_url"), factory.Faker("image_url"), factory.Faker("image_url"),])
+
+    @factory.post_generation
+    def subscribers(self: Event, create: bool, extracted: list[User] | None, **kwargs) -> None:
+
+        if not create:
+            return
+
+        if extracted is None:
+            users: list[User] = UserFactory.create_batch(kwargs.pop("size", 1), events=[self], **kwargs)
+        else:
+            users = extracted
+
+        self.subscribers.extend(users)
+        self.save()

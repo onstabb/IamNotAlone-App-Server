@@ -9,6 +9,7 @@ from factories.factories import (
     UserFactory,
     ContactFactory,
     ProfileFactory,
+    EventFactory,
 )
 from photos import config as file_config
 from location.database import geonames_db
@@ -97,6 +98,11 @@ def contact_factory(db_config, city_db):
 @pytest.fixture(scope="session")
 def userprofile_factory(db_config, city_db):
     return ProfileFactory
+
+
+@pytest.fixture(scope="session")
+def event_factory(db_config, city_db):
+    return EventFactory
 
 
 @pytest.fixture(scope="function")

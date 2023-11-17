@@ -1,4 +1,4 @@
-__all__ = ('DateOfBirth', 'Age')
+__all__ = ('BirthDate', 'Age')
 
 from datetime import date, datetime
 from typing import Annotated
@@ -8,7 +8,7 @@ from pydantic import PastDate, AfterValidator, BeforeValidator, PositiveInt
 from userprofile import config
 
 
-def validate_date_of_birth(value: date) -> date:
+def validate_birthdate(value: date) -> date:
     today: date = date.today()
     year: int = value.year
     if not value.replace(year=year + config.MIN_AGE) <= today <= value.replace(year=year + config.MAX_AGE):
@@ -23,5 +23,5 @@ def validate_age(value: int | date) -> int:
     return value
 
 
-DateOfBirth = Annotated[PastDate, AfterValidator(validate_date_of_birth)]
+BirthDate = Annotated[PastDate, AfterValidator(validate_birthdate)]
 Age = Annotated[PositiveInt, BeforeValidator(validate_age)]

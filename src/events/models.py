@@ -1,10 +1,10 @@
 from mongoengine import StringField, ListField, ReferenceField, DateTimeField
 
-from location.models import LocationWithAddressMixin
+from location.models import LocationMixin
 from models import BaseDocument
 
 
-class Event(BaseDocument, LocationWithAddressMixin):
+class Event(BaseDocument, LocationMixin):
     title = StringField(required=True)  # type: str
     description = StringField(required=True)    # type: str
 

@@ -13,7 +13,7 @@ def init_db(**configuration) -> MongoClient:
 
     Contact.register_delete_rule(User, 'initiator', mongoengine.DENY)
     Contact.register_delete_rule(User, 'respondent', mongoengine.DENY)
-
+    # User.register_delete_rule(Contact, "contacts", mongoengine.CASCADE)
 
     Event.register_delete_rule(User, 'subscribers', mongoengine.PULL)
     User.register_delete_rule(Event, 'events', mongoengine.PULL)
