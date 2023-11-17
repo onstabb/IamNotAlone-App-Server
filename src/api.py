@@ -1,22 +1,35 @@
 from fastapi import APIRouter, status
 
 from authorization.router import router as auth_router
+from candidates.router import router as candidates_router
 from contacts.router import router as contact_router
-from events.router import router as event_router
-from messages.router import router as message_router
-from notifications.router import router as notification_router
-from profiles.router import router as profile_router
+from events.routers import router as event_router
+from events.routers import user_router as user_events_router
+from likes.routers import router as likes_router
+from notifications.routers import router as notifications_router
+
+from photos.routers import router as photos_router
+from userprofile.routers import router as profile_router
+from users.routers import router as users_router
 
 
 api_router: APIRouter = APIRouter(prefix="/api/v1")
+api_router.include_router(users_router, tags=['Users'], prefix='/users')
 api_router.include_router(auth_router, tags=["Authorization"], prefix="")
-api_router.include_router(contact_router, tags=['Contacts'], prefix="/contacts")
 api_router.include_router(event_router, tags=["Events"], prefix="/events")
-api_router.include_router(message_router, tags=['Messages'], prefix="/messages")
-api_router.include_router(notification_router, tags=["Notifications"], prefix="/notifications")
-api_router.include_router(profile_router, tags=['Profiles'], prefix='/profiles')
+
+authenticated_router: APIRouter = APIRouter(prefix="/users/me", tags=["Users"])
+authenticated_router.include_router(profile_router, tags=["Profile"], prefix="/profile")
+authenticated_router.include_router(photos_router, tags=["Photos"], prefix="/photos")
+authenticated_router.include_router(candidates_router, tags=["Candidates"], prefix="/candidates")
+authenticated_router.include_router(likes_router, tags=["Likes"], prefix="/likes")
+authenticated_router.include_router(contact_router, tags=["Contacts"], prefix="/contacts")
+authenticated_router.include_router(user_events_router, tags=["Events"], prefix="/events")
+authenticated_router.include_router(notifications_router, tags=["Notifications"], prefix="/notifications")
+
+api_router.include_router(authenticated_router)
 
 
-@api_router.get("/health", status_code=status.HTTP_204_NO_CONTENT)
+@api_router.get("/health", status_code=status.HTTP_204_NO_CONTENT, include_in_schema=False)
 def check_alive():
     return

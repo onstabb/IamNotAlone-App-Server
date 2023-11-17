@@ -3,87 +3,113 @@ import datetime
 import factory
 from factory import fuzzy
 
-from authorization.models import User
+
 from contacts import service as contact_service
-from contacts.models import ProfileContact, ContactState
-from geodata.models import Location
-from messages.models import Message
-from profiles import config as profile_config
-from profiles.enums import Gender, ResidenceLength, ResidencePlan
-from profiles.models import Profile
+from contacts.models import Contact, Message, ContactState
+from factories.helpers import build_json_dict
+from location.database import geonames_db
+from location.models import Location
+from userprofile import config as profile_config
+from userprofile.enums import Gender, ResidenceLength, ResidencePlan
+
 
 from tests.factories import generators
-from tests.factories.helpers import Objects
+from users.models import User, UserProfile
 
 
-class UserFactory(factory.mongoengine.MongoEngineFactory,):
+class _BaseMongoEngineFactory(factory.mongoengine.MongoEngineFactory):
+
+    @classmethod
+    def build_json_dict(cls, **kwargs) -> dict:
+        return build_json_dict(cls, **kwargs)
+
+    @classmethod
+    def insert_many(cls, size, **kwargs) -> None:
+        instances_built = cls.build_batch(size, **kwargs)
+        cls._meta.model.objects.insert(instances_built, load_bulk=False)
+
+
+class UserFactory(_BaseMongoEngineFactory):
     class Meta:
         model = User
 
     phone_number = factory.LazyFunction(generators.generate_random_mobile_number)
     password = factory.LazyFunction(generators.generate_hashed_password)
     profile = factory.SubFactory("tests.factories.factories.ProfileFactory",)
+    photo_urls = factory.List([factory.Faker("image_url")])
+    is_active = fuzzy.FuzzyChoice((False, False, False, True))
 
-    @classmethod
-    def insert_many(cls, size, **kwargs) -> None:
-        instances_built = cls.build_batch(size, **kwargs)
+    class Params:
+        active = factory.Trait(
+            is_active=True,
+            banned=False
+        )
 
-        Profile.objects.insert([user.profile for user in instances_built], load_bulk=False)
-        cls._meta.model.objects.insert(instances_built, load_bulk=False)
 
-
-class LocationFactory(factory.mongoengine.MongoEngineFactory):
+class LocationFactory(_BaseMongoEngineFactory):
     class Meta:
         model = Location
 
-    city_coordinates = factory.LazyFunction(lambda: generators.get_random_city().coordinates)
-    coordinates = factory.SelfAttribute("city_coordinates")
+    city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
+    current = factory.LazyAttribute(lambda location: geonames_db.get_city(location.city_id).coordinates)
 
 
-class ProfileFactory(factory.mongoengine.MongoEngineFactory):
+class ProfileFactory(_BaseMongoEngineFactory):
     class Meta:
-        model = Profile
+        model = UserProfile
 
     name = factory.Faker("user_name")
     birthday = fuzzy.FuzzyDate(
         start_date=datetime.date.today() - datetime.timedelta(days=365 * profile_config.MAX_AGE),
         end_date=datetime.date.today() - datetime.timedelta(days=365 * profile_config.MIN_AGE),
     )
-    current_city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
-    native_city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
 
     gender = factory.Iterator(Gender)
     gender_preference = factory.Iterator([None] + [gender for gender in Gender])
     description = factory.Faker("paragraph", nb_sentences=2)
     residence_plan = factory.Iterator(ResidencePlan)
     residence_length = factory.Iterator(ResidenceLength)
-    photo_urls = factory.List([factory.Faker("image_url")])
-
     location = factory.SubFactory(LocationFactory)
-    disabled = fuzzy.FuzzyChoice((False, False, False, True))
 
 
-class ContactFactory(factory.mongoengine.MongoEngineFactory):
-
+class ContactFactory(_BaseMongoEngineFactory):
     class Meta:
-        model = ProfileContact
+        model = Contact
 
-    initiator = factory.Iterator(Objects(Profile, slice(1)))
-    respondent = factory.Iterator(Objects(Profile, slice(1, None)))
+    initiator = factory.SubFactory(UserFactory)
+    respondent = factory.SubFactory(UserFactory)
     initiator_state = factory.Iterator([contact for contact in ContactState] + [None])
     respondent_state = factory.Iterator([contact for contact in ContactState] + [None])
     status = factory.LazyAttribute(
         lambda contact: contact_service.get_contact_status(contact.initiator_state, contact.respondent_state)
     )
 
+    class Params:
+
+        active_dialog = factory.Trait(
+            initiator_state=ContactState.ESTABLISHED,
+            respondent_state=ContactState.ESTABLISHED,
+            initiator__active=True,
+            respondent__active=True,
+            messages=factory.List(
+                [
+                    factory.SubFactory(
+                        'tests.factories.factories.MessageFactory',
+                        sender=factory.SelfAttribute(f"...{sender}")
+                    )
+                    for sender in ("initiator", "respondent", "initiator", "initiator")
+                ]
+            )
+        )
+
+        likes = factory.Trait(
+            initiator_state=ContactState.ESTABLISHED,
+            respondent_state=None,
+        )
 
 
-class MessageFactory(factory.mongoengine.MongoEngineFactory):
-
+class MessageFactory(_BaseMongoEngineFactory):
     class Meta:
         model = Message
 
-    content_text = factory.Faker("paragraph", nb_sentences=4)
-    sender = factory.Iterator(Objects(Profile, slice(1)))
-    recipient = factory.Iterator(Objects(Profile, slice(1, None)))
-    has_read = fuzzy.FuzzyChoice((True, False))
+    text = factory.Faker("paragraph", nb_sentences=4)

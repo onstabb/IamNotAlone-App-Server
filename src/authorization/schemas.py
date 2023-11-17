@@ -2,23 +2,16 @@ from datetime import datetime
 
 from pydantic import BaseModel, SecretStr
 
-from src import config
-from authorization.mobilephonenumber import MobilePhoneNumber
+from authorization.phonenumber import MobilePhoneNumber
 from authorization.smsservice.smscode import SmsCode
-from models import PydanticObjectId
 
 
 class SignUpDataIn(BaseModel):
     phone_number: MobilePhoneNumber
 
 
-class UserIn(SignUpDataIn):
+class UserCredentialsIn(SignUpDataIn):
     password: SecretStr
-
-
-class UserOut(BaseModel):
-    id: PydanticObjectId
-    phone_number: str
 
 
 class SmsConfirmationDataIn(SignUpDataIn):
@@ -31,6 +24,4 @@ class SmsConfirmationDataOut(BaseModel):
 
 class TokenDataOut(BaseModel):
     access_token: str
-    token_type: str = config.AUTH_HEADER_TYPE
     new_password: str | None = None
-    expires_at: datetime

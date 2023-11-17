@@ -9,10 +9,11 @@ from sse_starlette import ServerSentEvent
 from models import PydanticObjectId
 from notifications.enums import NotificationType
 
+
 TBaseModel = TypeVar('TBaseModel', bound=BaseModel)
 
 
-class ProfileNotificationManager:
+class NotificationManager:
 
     def __init__(self):
         self.clients: dict[str, deque[ServerSentEvent]] = dict()
@@ -28,13 +29,12 @@ class ProfileNotificationManager:
 
     async def retrieve_events(self, request: Request, recipient_id: str):
         self.connect(recipient_id)
-
         while True:
             if await request.is_disconnected():
                 self.disconnect(recipient_id)
                 break
-            await asyncio.sleep(0.5)
 
+            await asyncio.sleep(0.5)
             client_deque = self.clients[recipient_id]
             if len(client_deque) <= 0:
                 continue
@@ -54,4 +54,4 @@ class ProfileNotificationManager:
         return None
 
 
-notification_manager = ProfileNotificationManager()
+notification_manager = NotificationManager()

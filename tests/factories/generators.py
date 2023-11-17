@@ -1,11 +1,11 @@
 from random import Random
 
 
-from authorization.mobilephonenumber import validate_mobile_phone_number
-from authorization.password import build_password, get_password_hash
-from geodata.cityrow import CityRow
+from authorization.phonenumber import validate_mobile_phone_number
+from security import generate_password, hash_password
+from location.cityrow import CityRow
 
-from geodata.database import geonames_db
+from location.database import geonames_db
 
 
 
@@ -29,7 +29,7 @@ def generate_random_mobile_number(random: Random | None = None) -> str:
 
 
 def generate_hashed_password() -> str:
-    return get_password_hash(build_password())
+    return hash_password(generate_password())
 
 
 def get_random_city(random: Random | None = None) -> CityRow:

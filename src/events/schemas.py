@@ -1,14 +1,18 @@
-from pydantic import BaseModel, HttpUrl, Field, AwareDatetime
+from pydantic import BaseModel, HttpUrl, AwareDatetime
 
-from geodata.geopoint import GeoPoint
-from geodata.citygeonames import CityGeonames
+from location.geopoint import GeoPoint
+
+
+class EventLocationOut(BaseModel):
+    city_id: int
+    city: GeoPoint
+    current: GeoPoint
+    address: str
 
 
 class EventOut(BaseModel):
     title: str
     description: str
-    address: str
-    city: CityGeonames = Field(serialization_alias="city_id")
-    coordinates: GeoPoint
+    location: EventLocationOut
     image_urls: list[HttpUrl]
     start_at: AwareDatetime

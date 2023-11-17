@@ -1,18 +1,17 @@
-from mongoengine import StringField, ListField, ReferenceField, DateTimeField, IntField
+from mongoengine import StringField, ListField, ReferenceField, DateTimeField
 
-from geodata.models import LocationMixin
+from location.models import LocationWithAddressMixin
 from models import BaseDocument
 
 
-class Event(BaseDocument, LocationMixin):
-    title = StringField(required=True)
-    description = StringField(required=True)
-    address = StringField(required=True)
-    city_id = IntField(required=True)
-    subscribers = ListField(ReferenceField("Profile"))
-    start_at = DateTimeField(required=True)
-    image_urls = ListField(StringField())
+class Event(BaseDocument, LocationWithAddressMixin):
+    title = StringField(required=True)  # type: str
+    description = StringField(required=True)    # type: str
+
+    subscribers = ListField(ReferenceField("User")) # type: list
+    start_at = DateTimeField(required=True) # type:
+    image_urls = ListField(StringField())   # type: list[str]
 
     meta = {
-        'indexes': ['city_id'],
+        'indexes': ['location.city_id', [("location.current", "2dsphere")], ]
     }

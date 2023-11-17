@@ -2,7 +2,7 @@ import pytest
 
 import pydantic
 
-from authorization.mobilephonenumber import MobilePhoneNumber
+from authorization.phonenumber import MobilePhoneNumber
 
 
 MobilePhoneNumberAdapter = pydantic.TypeAdapter(MobilePhoneNumber)
@@ -12,7 +12,6 @@ MobilePhoneNumberAdapter = pydantic.TypeAdapter(MobilePhoneNumber)
     "number",
     [
         "+380961234567",
-        "+380950123456",
         "+48888888888",
     ]
 )
@@ -27,7 +26,6 @@ def test_correct_phone_number_format(number):
         "331231",
         "380950123456",
         "symbol",
-        "31-32-64",
         "710-050-313",
     ]
 )

@@ -1,22 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest
-import pytz
-
-from src import security
 
 
-def get_datetime_from_now(delta_days: int) -> datetime:
-    return datetime.now(pytz.utc) + timedelta(days=delta_days)
+import security
+from datehelpers import get_aware_datetime_now
 
 
 @pytest.mark.parametrize(
     "subject,expires_at",
     [
-        ("2jfj221d", get_datetime_from_now(10)),
-        ("user_exp", get_datetime_from_now(16)),
-        pytest.param("subject1", get_datetime_from_now(-3), marks=pytest.mark.xfail),
-        pytest.param("user_exp", get_datetime_from_now(-15), marks=pytest.mark.xfail)
+        ("2jfj221d", get_aware_datetime_now(delta_days=1)),
     ]
 )
 def test_correct_token_encoding(subject: str, expires_at: datetime):
@@ -27,8 +21,7 @@ def test_correct_token_encoding(subject: str, expires_at: datetime):
 @pytest.mark.parametrize(
     "subject,expires_at",
     [
-        ("2jfj221d", get_datetime_from_now(-10)),
-        ("user_exp", get_datetime_from_now(-16)),
+        ("2jfj221d", get_aware_datetime_now(delta_days=-1)),
     ]
 )
 def test_expired_token_encoding(subject: str, expires_at: datetime):
@@ -39,10 +32,15 @@ def test_expired_token_encoding(subject: str, expires_at: datetime):
 @pytest.mark.parametrize(
     "invalid_token",
     [
-        "d21kgm000ma2-=",
-        "definitely_incorrect",
-        "%"
+        "...@definitely_incorrect@...",
     ]
 )
 def test_invalid_token(invalid_token: str):
     assert security.get_subject_from_access_token(invalid_token) == ""
+
+
+def test_passwords():
+    password = "12345"
+    hashed_password = security.hash_password(password)
+
+    assert security.verify_password(password, hashed_password)

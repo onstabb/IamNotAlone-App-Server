@@ -1,16 +1,47 @@
-from pydantic import BaseModel, computed_field, Field, AliasChoices
+from datetime import datetime
+from functools import cached_property
 
+from pydantic import BaseModel, Field, constr, computed_field
+
+from contacts import config
 from contacts.enums import ContactState
 from models import PydanticObjectId
-from profiles.schemas import PublicProfileSimplified
+from users.schemas import UserPublicOut
+
+
+class MessageBase(BaseModel):
+    text: constr(max_length=config.MESSAGE_MAX_LENGTH, min_length=1)
+
+
+class MessageIn(MessageBase):
+    pass
+
+
+class MessageOut(MessageBase):
+    sender: PydanticObjectId | UserPublicOut
+    date: datetime = Field(validation_alias="created_at")
 
 
 class ContactOut(BaseModel):
+    initiator: UserPublicOut | PydanticObjectId = Field(exclude=True)
+    respondent: UserPublicOut | PydanticObjectId = Field(exclude=True)
+    opposite_user: UserPublicOut | None = Field(exclude=True, default=None)
 
-    id: PydanticObjectId = Field(validation_alias=AliasChoices("_id", "id"))
-    initiator: PublicProfileSimplified
-    respondent: PublicProfileSimplified
     status: ContactState | None
+    messages: list[MessageOut]
+
+    @computed_field
+    @cached_property
+    def user(self) -> UserPublicOut | None:
+        """ This is the opposite user resolver for particular user """
+        if self.opposite_user:
+            return self.opposite_user
+        if isinstance(self.initiator, UserPublicOut) and isinstance(self.respondent, PydanticObjectId):
+            return self.initiator
+        elif isinstance(self.respondent, UserPublicOut) and isinstance(self.initiator, PydanticObjectId):
+            return self.respondent
+
+        return None
 
 
 class ContactStateIn(BaseModel):
@@ -18,4 +49,6 @@ class ContactStateIn(BaseModel):
 
 
 class ContactCreateDataIn(ContactStateIn):
-    profile_id: PydanticObjectId
+    user_id: PydanticObjectId
+
+

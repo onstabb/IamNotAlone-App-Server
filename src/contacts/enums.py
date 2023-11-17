@@ -12,3 +12,4 @@ class ContactState(enum.StrEnum):
 class ContactType(enum.StrEnum):
     LIKES = "likes"
     NEW_ESTABLISHED = "established"
+    DIALOG = "dialog"

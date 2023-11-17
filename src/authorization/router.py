@@ -1,20 +1,28 @@
-from fastapi import APIRouter, Header, HTTPException, status, Depends
+from fastapi import APIRouter, Header, HTTPException, status
 
+import config as global_config
 
 from authorization import service
-from authorization.models import User
-from authorization.password import build_password, verify_password
 from authorization.schemas import (
-    SignUpDataIn, TokenDataOut, SmsConfirmationDataIn, SmsConfirmationDataOut, UserIn
+    SignUpDataIn, TokenDataOut, SmsConfirmationDataIn, SmsConfirmationDataOut, UserCredentialsIn
 )
 from authorization.smsservice.telesign import TelesignService
-from security import create_access_token, get_token_expiration_from_now
+from users.models import User
+from security import generate_password
+
 
 router: APIRouter = APIRouter(tags=['Authorization'])
 
 
 @router.post("/signup", response_model=SmsConfirmationDataOut)
-def sign_up(data: SignUpDataIn, accept_language: str = Header(default="en", max_length=2, examples=["uk", "en", "pl"])):
+def sign_up(
+        data: SignUpDataIn,
+        accept_language: str = Header(
+            default=global_config.i18n_DEFAULT_LANGUAGE,
+            max_length=2,
+            examples=list(global_config.i18n_SUPPORTED_LANGUAGES)
+        )
+):
     expires_at = TelesignService.send_sms_verification(data.phone_number, accept_language)
     return SmsConfirmationDataOut(sms_expires_at=expires_at)
 
@@ -24,37 +32,21 @@ def confirm_sms(data: SmsConfirmationDataIn):
     if not TelesignService.verify_code_and_clear(data.phone_number, data.sms_code):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'SMS-code is invalid')
 
-    generated_password: str = build_password()
-
-    user: User | None = service.get_user(data.phone_number)
+    generated_password: str = generate_password()
+    user: User | None = service.get_user_by_phone_number(data.phone_number)
 
     user = service.update_user_password(user, generated_password) \
         if user else service.create_user(data.phone_number, generated_password)
 
-    access_token_expires_at = get_token_expiration_from_now()
-
-    return TokenDataOut(
-        access_token=create_access_token(subject=user.id, expires_at=access_token_expires_at),
-        new_password=generated_password,
-        expires_at=access_token_expires_at
-    )
+    return TokenDataOut(access_token=user.token, new_password=generated_password)
 
 
 @router.post("/login", response_model=TokenDataOut, response_model_exclude_none=True)
-def login(user_in: UserIn):
-
-    user: User | None = service.get_user(user_in.phone_number)
-
-    if not user or not verify_password(user_in.password.get_secret_value(), user.password):
+def login(user_in: UserCredentialsIn):
+    user: User | None = service.get_user_by_phone_number(user_in.phone_number)
+    if not user or not user.check_password(user_in.password.get_secret_value()):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid phone number or password",
         )
 
-    access_token_expires_at = get_token_expiration_from_now()
-    return TokenDataOut(
-        access_token=create_access_token(subject=user.id, expires_at=access_token_expires_at),
-        new_password=None,
-        expires_at=access_token_expires_at,
-    )
-
-
+    return TokenDataOut(access_token=user.token, new_password=None)

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from apscheduler.job import Job
 
 from authorization import config
-from authorization.mobilephonenumber import MobilePhoneNumber
+from authorization.phonenumber import MobilePhoneNumber
 from authorization.smsservice.smscode import SmsCode, generate_code
 from datehelpers import get_aware_datetime_now
 from i18n import translate
@@ -81,7 +81,7 @@ class BaseSmsService(ABC):
 
         sms_code = generate_code(config.SMS_GENERATED_CODE_LENGTH)
         message = translate(
-            "IamNotAlone service. Your authorization code: {sms_code}", language=language
+            "IamNotAlone services. Your authorization code: {sms_code}", language=language
         ).format(sms_code=sms_code)
 
         if not config.SMS_SERVICE_DISABLED:

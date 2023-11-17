@@ -3,11 +3,11 @@ import pytest
 from authorization.smsservice.baseservice import BaseSmsService
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 def phone_number(scheduler):
     number = "+48888888888"
     BaseSmsService.send_sms_verification(number, language="uk")
-    yield number
+    return number
 
 
 def test_send_sms_expiration_task_created(phone_number, scheduler):

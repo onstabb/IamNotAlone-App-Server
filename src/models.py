@@ -5,23 +5,25 @@ from bson import ObjectId
 from bson.errors import InvalidId
 from mongoengine import (
     Document,
-    DoesNotExist, PointField
+    DoesNotExist,
 )
-from mongoengine.base import BaseField
+from mongoengine.base import BaseField, LazyReference
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler, PlainSerializer
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
-from pydantic_core.core_schema import ValidationInfo
 
-if typing.TYPE_CHECKING:
-    from geodata.geopoint import GeoPoint
 
 class PydanticObjectId(ObjectId):
 
     @classmethod
-    def validate(cls, value: typing.AnyStr | ObjectId, _validation_info: ValidationInfo) -> typing.Self:
+    def validate(cls, value: typing.AnyStr | ObjectId | LazyReference) -> typing.Self:
+
         if isinstance(value, bytes):
             value = value.decode("utf-8")
+
+        if isinstance(value, LazyReference):
+            value = value.id
+
         try:
             return cls(value)
         except InvalidId:
@@ -31,9 +33,23 @@ class PydanticObjectId(ObjectId):
     def __get_pydantic_core_schema__(
             cls, _source: typing.Any, _handler: GetCoreSchemaHandler
     ) -> core_schema.CoreSchema:
+
+        schema = core_schema.chain_schema(
+            [
+                core_schema.union_schema(
+                    [
+                        core_schema.str_schema(),
+                        core_schema.is_instance_schema(ObjectId),
+                        core_schema.is_instance_schema(LazyReference)
+                    ]
+                ),
+                core_schema.no_info_plain_validator_function(cls.validate)
+            ]
+        )
+
         return core_schema.json_or_python_schema(
             serialization=core_schema.plain_serializer_function_ser_schema(lambda instance: str(instance)),
-            python_schema=core_schema.general_plain_validator_function(cls.validate),
+            python_schema=schema,
             json_schema=core_schema.str_schema(),
         )
 
@@ -69,7 +85,4 @@ class BaseDocument(Document):
 
 
 SerializeDocToId = PlainSerializer(lambda doc: doc.id, return_type=str, when_used="json")
-ProfileIdQuery = PydanticObjectId | typing.Literal["my"]
 
-class LocationPointMixin:
-    coordinates: 'GeoPoint' = PointField(required=True, )

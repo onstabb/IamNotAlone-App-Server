@@ -1,8 +1,12 @@
-__all__ = ('get_token_expiration_from_now', 'create_access_token', 'JWTBearer',)
+__all__ = (
+    'get_token_expiration_from_now', 'create_access_token', 'JWTBearer',
+    'generate_password', 'hash_password', 'verify_password'
+)
 
 from datetime import datetime, timedelta
 
-
+import passlib.context
+import passlib.pwd
 from fastapi import Request, HTTPException, status
 from fastapi.security import HTTPBearer
 from fastapi.security.utils import get_authorization_scheme_param
@@ -13,9 +17,13 @@ import config
 from datehelpers import get_aware_datetime_now
 
 
+password_context = passlib.context.CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
 def create_access_token(subject: str, expires_at: datetime) -> str:
     to_encode = {"sub": str(subject), "exp": expires_at}
-    return jwt.encode(to_encode, key=config.AUTH_SECRET_KEY, algorithm=config.AUTH_ALGORYTHM)
+    encoded = jwt.encode(to_encode, key=config.AUTH_SECRET_KEY, algorithm=config.AUTH_ALGORYTHM)
+    return encoded
 
 
 def get_subject_from_access_token(token: str) -> str:
@@ -23,9 +31,11 @@ def get_subject_from_access_token(token: str) -> str:
         payload: dict = jwt.decode(token, key=config.AUTH_SECRET_KEY, algorithms=[config.AUTH_ALGORYTHM])
     except JWTError:
         return ""
+
     expires_at = datetime.fromtimestamp(payload['exp'], utc)
     if get_aware_datetime_now() > expires_at:
         return ""
+
     return payload.get("sub", "")
 
 
@@ -55,3 +65,15 @@ class _JWTBearer(HTTPBearer):
 
 
 JWTBearer = _JWTBearer(scheme_name="Bearer JWT")
+
+
+def generate_password(length: int = 8) -> str:
+    return passlib.pwd.genword(length=length)
+
+
+def hash_password(password: str) -> str:
+    return password_context.hash(password)
+
+
+def verify_password(plain_password: str | bytes, hashed_password: str | bytes) -> bool:
+    return password_context.verify(plain_password, hashed_password)

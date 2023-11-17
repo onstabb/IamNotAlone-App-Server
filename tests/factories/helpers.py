@@ -1,12 +1,17 @@
+import datetime
 from typing import Type
 
-from mongoengine import ReferenceField
+import factory
+
 from models import BaseDocument
 
 
-
 class Objects:
+    """
+    This class is intended to use with factory.Iterator over a subset of objects from a MongoDB collection
+    defined by the document_cls within the specified slice.
 
+    """
     def __init__(self, document_cls: Type[BaseDocument], slice_obj: slice):
         self._doc_cls: Type[BaseDocument] = document_cls
         self._slice: slice = slice_obj
@@ -15,18 +20,15 @@ class Objects:
         return iter(self._doc_cls.objects[self._slice])
 
 
-def create_reference_field_documents(document: BaseDocument) -> None:
-    for name, field in document.get_field_info().values():
-        if isinstance(field, ReferenceField):
-            attribute = getattr(document, name)
-            if isinstance(attribute, BaseDocument):
-                attribute.save()
+def build_json_dict(cls: Type[factory.mongoengine.MongoEngineFactory], **kwargs) -> dict:
+    result: dict = factory.build(dict, FACTORY_CLASS=cls, **kwargs)
 
+    for key, value in cls.__dict__.items():
+        if isinstance(value, factory.SubFactory):
+            result[key] = build_json_dict(cls=value.get_factory())
 
-class CreateReferenceFieldDocumentsMixin:
+    for key, value in result.items():
+        if isinstance(value, datetime.date):
+            result[key] = value.isoformat()
 
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        instance = model_class(*args, **kwargs)
-        create_reference_field_documents(instance)
-        return instance
+    return result

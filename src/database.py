@@ -1,24 +1,22 @@
 __all__ = ("init_db", "close_db")
 
-import typing
-
 import mongoengine
+from pymongo import MongoClient
 
-from authorization.models import User
+from contacts.models import Contact
 from events.models import Event
-
-from profiles.models import Profile
-
-
-# TODO: Message -> Profile, ProfileContact -> Profile
-def init_db(**configuration) -> typing.Any:
+from users.models import User
 
 
-    Profile.register_delete_rule(Event, 'events', mongoengine.PULL)
-    # Profile.register_delete_rule(ProfileContact, 'initialized_contacts', mongoengine.CASCADE)
 
-    User.register_delete_rule(Profile, "profile", mongoengine.CASCADE)
-    Event.register_delete_rule(Profile, 'participants', mongoengine.DO_NOTHING)
+def init_db(**configuration) -> MongoClient:
+
+    Contact.register_delete_rule(User, 'initiator', mongoengine.DENY)
+    Contact.register_delete_rule(User, 'respondent', mongoengine.DENY)
+
+
+    Event.register_delete_rule(User, 'subscribers', mongoengine.PULL)
+    User.register_delete_rule(Event, 'events', mongoengine.PULL)
 
     return mongoengine.connect(**configuration)
 

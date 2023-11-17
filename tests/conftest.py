@@ -1,34 +1,37 @@
-import os
-
 import pytest
 from factory import random
-from fastapi.testclient import TestClient
-
+from starlette.testclient import TestClient
 
 import config
-import security
 from authorization import config as auth_config
-from authorization.models import User
 from database import init_db, close_db
-from files import config as file_config
-from files import service as file_service
-from geodata.database import geonames_db
+from factories.factories import (
+    UserFactory,
+    ContactFactory,
+    ProfileFactory,
+)
+from photos import config as file_config
+from location.database import geonames_db
 from main import app
+from photos.service import set_bucket
+from photos.bucket.local import LocalBucket
 from scheduling import scheduler as scheduler_
+from users.models import User
 
 
-ROOT_DIR = os.path.join(config.BASE_DIR, "tests")
-DATA_DIR = os.path.join(ROOT_DIR, "data")
-
-def _db_clear(db) -> None:
-    db.drop_database(config.DB_NAME)
+ROOT_DIR = config.BASE_DIR / "tests"
+DATA_DIR = ROOT_DIR / "data"
 
 
-def get_auth_headers(user: User) -> dict:
-    headers = {
-        "Authorization": f"Bearer {security.create_access_token(user.id, security.get_token_expiration_from_now())}"
-    }
-    return headers
+class AppTestClient(TestClient):
+
+    @property
+    def bearer_token(self):
+        return self.headers.get("Authorization")
+
+    @bearer_token.setter
+    def bearer_token(self, new_token: str) -> None:
+        self.headers = {"Authorization": f"Bearer {new_token}"}
 
 
 @pytest.fixture(scope="session")
@@ -57,7 +60,7 @@ def scheduler():
 
 @pytest.fixture(scope="session")
 def city_db():
-    geonames_db.connect(config.DB_GEONAMES_DATA_SOURCE)
+    geonames_db.connect()
     yield geonames_db
     geonames_db.close()
 
@@ -65,43 +68,44 @@ def city_db():
 @pytest.fixture(scope="session")
 def db_config(factory_random):
     db = init_db(host=config.DB_HOST, db=config.DB_NAME)
-    _db_clear(db)
+    db.drop_database(config.DB_NAME)
     factory_random.reseed_random(131313)
     yield db
     close_db()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def client(db_config, scheduler, city_db, temp_file_storage):
     auth_config.SMS_SERVICE_DISABLED = True
-    client = TestClient(app=app)
+    set_bucket(LocalBucket())
+
+    client = AppTestClient(app=app)
     yield client
     client.close()
 
 
 @pytest.fixture(scope="session")
 def user_factory(db_config, city_db):
-    from factories.factories import UserFactory
     return UserFactory
 
 
 @pytest.fixture(scope="session")
-def _prepare_test_user_auth(user_factory) -> tuple[dict, User]:
-    user: User = user_factory.create(profile=None)
-    return get_auth_headers(user), user
+def contact_factory(db_config, city_db):
+    return ContactFactory
 
 
 @pytest.fixture(scope="session")
-def auth_headers_user_without_profile(_prepare_test_user_auth):
-    headers, user = _prepare_test_user_auth
-    return headers
+def userprofile_factory(db_config, city_db):
+    return ProfileFactory
 
 
-@pytest.fixture(scope="session")
-def authorization(_prepare_test_user_auth):
-    from factories.factories import ProfileFactory
-    headers, user = _prepare_test_user_auth
-    profile = ProfileFactory.create()
-    user.profile = profile
-    user.save()
-    return headers
+@pytest.fixture(scope="function")
+def user(user_factory) -> User:
+    user: User = user_factory.create(active=True)
+    return user
+
+
+@pytest.fixture(scope="function")
+def authorized_user(client, user) -> User:
+    client.bearer_token = user.token
+    return user
