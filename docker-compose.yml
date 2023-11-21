@@ -9,7 +9,7 @@ services:
     depends_on:
       - mongo
     environment:
-      - DB_HOST=mongodb://mongo:27017/
+      - DB_URI=mongodb://mongo:27017/
     networks:
       - app-network
 

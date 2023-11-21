@@ -35,13 +35,7 @@ class _CityPydanticAnnotation:
 
         return core_schema.json_or_python_schema(
             json_schema=from_int_schema,
-            python_schema=core_schema.union_schema(
-                [
-                    # core_schema.is_instance_schema(CityRow,),
-                    # core_schema.no_info_plain_validator_function(CityRow.model_validate),
-                    from_int_schema,
-                ]
-            ),
+            python_schema=from_int_schema,
             serialization=core_schema.plain_serializer_function_ser_schema(lambda instance: instance.geonameid),
         )
 
@@ -53,7 +47,6 @@ class _CityPydanticAnnotation:
         json_schema = handler(core_schema.int_schema())
         json_schema.update(example=3081368)  # Wroclaw
         return json_schema
-
 
 
 CityGeonames = Annotated[CityRow, _CityPydanticAnnotation]

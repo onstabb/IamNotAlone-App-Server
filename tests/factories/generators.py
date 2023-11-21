@@ -36,5 +36,3 @@ def get_random_city(random: Random | None = None) -> CityRow:
     random =  _get_random(random)
     city = geonames_db.get_city_by_row_id(random.randint(0, 17391))
     return city
-
-

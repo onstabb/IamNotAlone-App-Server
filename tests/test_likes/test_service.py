@@ -2,10 +2,10 @@ from contacts.enums import ContactState
 from likes import service
 
 
-def test_get_likes(contact_factory, user):
+def test_get_likes_for_user(user, contact_factory):
     contact_factory.create_batch(5, likes=True, respondent=user)
 
-    contacts = service.get_likes(user)
+    contacts = service.get_likes_for_user(user)
 
     for contact in contacts:
         assert contact.initiator != user

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, status
 
-from authorization.router import router as auth_router
-from candidates.router import router as candidates_router
-from contacts.router import router as contact_router
+from authorization.routers import router as auth_router
+from candidates.routers import router as candidates_router
+from contacts.routers import router as contact_router
 from events.routers import router as event_router
 from events.routers import user_router as user_events_router
 from likes.routers import router as likes_router

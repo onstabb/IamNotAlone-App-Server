@@ -13,7 +13,7 @@ router: APIRouter = APIRouter()
 def update_profile_photo(
         photo: UploadFile,
         current_user: CurrentActiveUser,
-        list_index: int = Path(lt=config.MAX_PROFILE_PHOTOS, ge=0,)
+        list_index: int = Path(lt=config.MAX_USER_PHOTOS, ge=0)
 
 ):
     if list_index > len(current_user.photo_urls):

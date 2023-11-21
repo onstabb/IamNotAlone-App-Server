@@ -13,7 +13,7 @@ jobs:
 
     env:
       AUTH_SECRET_KEY: ${{ secrets.AUTH_SECRET_KEY }}
-      DB_HOST: ${{ secrets.DB_HOST }}
+      TEST_DB_URI: ${{ secrets.TEST_DB_URI }}
       S3_API_ENDPOINT: ${{ vars.S3_API_ENDPOINT }}
       S3_IPFS_URL: ${{ vars.S3_IPFS_URL }}
       S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}

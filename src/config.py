@@ -16,7 +16,7 @@ if not STATIC_PATH.exists():
 SERVER_URL: str = os.getenv("SERVER_URL", "http://127.0.0.1:8000")
 
 DB_NAME: str = os.getenv("DB_NAME", "iamnotalone")
-DB_HOST: str = os.getenv("DB_HOST", "localhost")
+DB_URI: str = os.getenv("DB_URI", "localhost")
 
 
 ACCESS_TOKEN_EXPIRE_DAYS: int = 14

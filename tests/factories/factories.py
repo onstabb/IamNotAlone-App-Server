@@ -7,7 +7,6 @@ from factory import fuzzy
 from contacts import service as contact_service
 from contacts.models import Contact, Message, ContactState
 from events.models import Event
-from factories.helpers import build_json_dict
 from location.database import geonames_db
 from location.models import Location
 from userprofile import config as profile_config
@@ -22,12 +21,17 @@ class _BaseMongoEngineFactory(factory.mongoengine.MongoEngineFactory):
 
     @classmethod
     def build_json_dict(cls, **kwargs) -> dict:
-        return build_json_dict(cls, **kwargs)
+        result: dict = factory.build(dict, FACTORY_CLASS=cls, **kwargs)
 
-    @classmethod
-    def insert_many(cls, size, **kwargs) -> None:
-        instances_built = cls.build_batch(size, **kwargs)
-        cls._meta.model.objects.insert(instances_built, load_bulk=False)
+        for key, value in cls.__dict__.items():
+            if isinstance(value, factory.SubFactory):
+                result[key] = value.get_factory().build_json_dict()
+
+        for key, value in result.items():
+            if isinstance(value, datetime.date):
+                result[key] = value.isoformat()
+
+        return result
 
 
 class UserFactory(_BaseMongoEngineFactory):
@@ -37,7 +41,7 @@ class UserFactory(_BaseMongoEngineFactory):
     phone_number = factory.LazyFunction(generators.generate_random_mobile_number)
     password = factory.LazyFunction(generators.generate_hashed_password)
     profile = factory.SubFactory("tests.factories.factories.ProfileFactory",)
-    photo_urls = factory.List([factory.Faker("image_url")])
+    photo_urls = factory.List([factory.Faker("image_url"), factory.Faker("image_url")])
     is_active = fuzzy.FuzzyChoice((False, False, False, True))
 
     class Params:

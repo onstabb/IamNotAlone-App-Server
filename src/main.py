@@ -18,7 +18,7 @@ app.mount('/static', StaticFiles(directory=config.STATIC_PATH, check_dir=True), 
 
 @app.on_event("startup")
 def startup():
-    init_db(host=config.DB_HOST, db=config.DB_NAME)
+    init_db(host=config.DB_URI, db=config.DB_NAME)
     scheduler.start()
     geonames_db.connect()
 

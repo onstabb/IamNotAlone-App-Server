@@ -1,14 +1,11 @@
 import base64
 import json
 import logging
-import os
 import typing
 from tempfile import TemporaryFile
-from urllib.parse import urlparse
 
 from PIL import Image, UnidentifiedImageError
-from pydantic import HttpUrl, Json
-from pydantic_core import Url
+from pydantic import Json
 
 from photos import config
 
@@ -17,25 +14,24 @@ log = logging.getLogger(__file__)
 
 
 def filename_token_encode(extension: str, **additional_data: Json) -> str:
+    """Encodes an JSON compatible information into filename"""
     data = json.dumps(additional_data, ensure_ascii=True)
     return f'{base64.b64encode(data.encode(encoding="ascii")).decode("ascii")}.{extension}'
 
 
-def filename_token_decode(encoded_filename: str) -> Json:
+def filename_token_decode(encoded_filename: str) -> dict:
+    """Decodes base64 encoded filename with JSON data into dict"""
     data: dict = json.loads(base64.b64decode(encoded_filename.split(".")[0]))
     return data
 
 
-def get_image_filename_from_url(image_url: typing.Union[HttpUrl, str]) -> str:
-    if isinstance(image_url, Url):
-        data_path = image_url.path
-    else:
-        data_path = urlparse(image_url).path
-
-    return os.path.split(data_path)[-1]
-
-
 def check_image_is_valid(file: typing.BinaryIO) -> bool:
+    """
+    Check if the provided binary file is a valid image.
+
+    :param file: A binary file object to be checked.
+    """
+
     try:
         image: Image = Image.open(file)
     except UnidentifiedImageError:
@@ -56,7 +52,15 @@ def image_compress(
         percent: int = config.FILE_IMAGE_COMPRESSION_PERCENT,
         max_pixel_size: int = config.FILE_IMAGE_MAX_PIXEL_SIZE,
     ) -> typing.BinaryIO:
-    """ Creates a temporary file with compressed JPEG image """
+    """
+    Compresses an image read from the provided binary file and returns the compressed binary data.
+
+    :param file: A binary file object representing the original image.
+    :param percent: Compression percentage to be applied (default: config.FILE_IMAGE_COMPRESSION_PERCENT)
+    :param max_pixel_size: Maximum pixel size for resizing the image (default: config.FILE_IMAGE_MAX_PIXEL_SIZE)
+
+    :returns: A BinaryIO file object containing the compressed image data.
+    """
 
     original_image: Image = Image.open(file)
     temp_file = TemporaryFile(suffix=f'.jpg')

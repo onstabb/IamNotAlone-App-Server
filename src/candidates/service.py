@@ -3,7 +3,7 @@ from datetime import datetime
 from users.models import User
 
 
-def get_candidates(user: User, limit: int = 1) -> list[dict]:
+def get_candidates_for_user(user: User, limit: int = 1) -> list[dict]:
     match_query = {
         "is_active": True,
         "banned": False,

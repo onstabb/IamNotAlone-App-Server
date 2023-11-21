@@ -43,7 +43,7 @@ class NotificationManager:
                 continue
             yield notification
 
-    def send(
+    def put_notification(
         self, data: TBaseModel, recipient_id: PydanticObjectId | str, notification_type: NotificationType
     ) -> TBaseModel | None:
 

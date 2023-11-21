@@ -15,18 +15,6 @@ def test_token_encoding(filename):
     assert data == decoded_data
 
 
-@pytest.mark.parametrize(
-    "url,expected",
-    [
-        ("https://example.com/filename.jpg", "filename.jpg"),
-        ("http://spmesite/path/to/file.doc", "file.doc"),
-        ("http://localhost:80/2312d11d/FILE", "FILE"),
-    ]
-)
-def test_get_image_filename_from_url(url, expected):
-    assert helpers.get_image_filename_from_url(url) == expected
-
-
 def test_check_image_is_valid(image_file):
     assert helpers.check_image_is_valid(image_file)
 

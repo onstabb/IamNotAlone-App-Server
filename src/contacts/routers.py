@@ -46,7 +46,7 @@ def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveComp
     contact = service.create_contact_by_initiator(current_user, target_user, data_in)
 
     if data_in.action == ContactState.ESTABLISHED:
-        notification_manager.send(
+        notification_manager.put_notification(
             UserPublicOut.model_validate(current_user, from_attributes=True),
             target_user.id,
             NotificationType.LIKE
@@ -70,7 +70,7 @@ def update_contact_state(
 
     service.update_contact_status(state_data, current_user, contact)
     if contact.established and current_user == contact.respondent:
-        notification_manager.send(
+        notification_manager.put_notification(
             UserPublicOut.model_validate(current_user, from_attributes=True),
             contact.initiator,
             NotificationType.CONTACT_ESTABLISHED
@@ -89,10 +89,10 @@ def send_message(
     if not contact or not contact.established:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Contact must be established")
 
-    if service.get_messages_count_from_sender(contact, current_user) > config.MAX_SENT_MESSAGES:
+    if service.get_messages_count_from_sender(contact, current_user) >= config.MAX_SENT_MESSAGES:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Limit of the messages has been exceeded")
 
     message = service.create_message(contact, sender=current_user, message_in=message_in)
     message_out = MessageOut.model_validate(message)
-    notification_manager.send(message_out, recipient_id=target_user.id, notification_type=NotificationType.MESSAGE)
+    notification_manager.put_notification(message_out, recipient_id=target_user.id, notification_type=NotificationType.MESSAGE)
     return message_out

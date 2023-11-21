@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from factory import random
 from starlette.testclient import TestClient
@@ -22,6 +24,9 @@ from users.models import User
 
 ROOT_DIR = config.BASE_DIR / "tests"
 DATA_DIR = ROOT_DIR / "data"
+
+TEST_DB_URI = os.getenv("TEST_DB_URI")
+TEST_DB_NAME = os.getenv("TEST_DB_NAME", "iamnotalone")
 
 
 class AppTestClient(TestClient):
@@ -68,7 +73,7 @@ def city_db():
 
 @pytest.fixture(scope="session")
 def db_config(factory_random):
-    db = init_db(host=config.DB_HOST, db=config.DB_NAME)
+    db = init_db(host=TEST_DB_URI, db=TEST_DB_NAME)
     db.drop_database(config.DB_NAME)
     factory_random.reseed_random(131313)
     yield db
