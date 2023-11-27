@@ -1,22 +1,17 @@
-from mongoengine import EmbeddedDocument, PointField, EmbeddedDocumentField, IntField, StringField
+from mongoengine import PointField, IntField, StringField
 
 
 from location.geopoint import GeoPoint, MongoGeoPoint
 
 
-class Location(EmbeddedDocument):
+class LocationMixin:
 
-    meta = {'allow_inheritance': True}
-
-    city_id = IntField()    # type: int
-    current = PointField(auto_index=False)  # type: GeoPoint
-    address = StringField(null=True)
+    city_id = IntField(required=True)    # type: int
+    location = PointField(auto_index=True, required=True)  # type: GeoPoint
 
     @property
-    def current_geo_json(self) -> MongoGeoPoint:
-        if isinstance(self.current, dict):
-            return self.current
-        return {"type": "Point", "coordinates": self.current}
+    def geo_json(self) -> MongoGeoPoint:
+        if isinstance(self.location, dict):
+            return self.location
+        return {"type": "Point", "coordinates": self.location}
 
-class LocationMixin:
-    location = EmbeddedDocumentField(Location, required=True, default=Location) # type: Location

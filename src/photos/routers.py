@@ -1,4 +1,4 @@
-from fastapi import UploadFile, status, APIRouter, HTTPException, Path
+from fastapi import UploadFile, status, APIRouter, HTTPException, Path, Response
 
 
 from photos import config, helpers, service
@@ -12,9 +12,9 @@ router: APIRouter = APIRouter()
 @router.put("/{list_index}", response_model=UserPrivateOut)
 def update_profile_photo(
         photo: UploadFile,
+        response: Response,
         current_user: CurrentActiveUser,
-        list_index: int = Path(lt=config.MAX_USER_PHOTOS, ge=0)
-
+        list_index: int = Path(lt=config.MAX_USER_PHOTOS, ge=0),
 ):
     if list_index > len(current_user.photo_urls):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid index")
@@ -45,5 +45,6 @@ def update_profile_photo(
         ContentType=photo.content_type
     )
 
+    response.status_code = status.HTTP_201_CREATED if len(current_user.photo_urls) == list_index else status.HTTP_200_OK
     service.upsert_photo_url(image_url, user=current_user, index=list_index)
     return current_user

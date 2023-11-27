@@ -8,7 +8,6 @@ from contacts import service as contact_service
 from contacts.models import Contact, Message, ContactState
 from events.models import Event
 from location.database import geonames_db
-from location.models import Location
 from userprofile import config as profile_config
 from userprofile.enums import Gender, ResidenceLength, ResidencePlan
 
@@ -54,14 +53,11 @@ class UserFactory(_BaseMongoEngineFactory):
 
 
 class LocationFactory(_BaseMongoEngineFactory):
-    class Meta:
-        model = Location
-
     city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
-    current = factory.LazyAttribute(lambda location: geonames_db.get_city(location.city_id).coordinates)
+    location = factory.LazyAttribute(lambda location: geonames_db.get_city(location.city_id).coordinates)
 
 
-class ProfileFactory(_BaseMongoEngineFactory):
+class ProfileFactory(LocationFactory):
     class Meta:
         model = UserProfile
 
@@ -76,7 +72,6 @@ class ProfileFactory(_BaseMongoEngineFactory):
     description = factory.Faker("paragraph", nb_sentences=2)
     residence_plan = factory.Iterator(ResidencePlan)
     residence_length = factory.Iterator(ResidenceLength)
-    location = factory.SubFactory(LocationFactory)
 
 
 class ContactFactory(_BaseMongoEngineFactory):
@@ -122,13 +117,13 @@ class MessageFactory(_BaseMongoEngineFactory):
     text = factory.Faker("paragraph", nb_sentences=4)
 
 
-class EventFactory(_BaseMongoEngineFactory):
+class EventFactory(LocationFactory):
     class Meta:
         model = Event
 
     title = factory.Faker("catch_phrase")
     description = factory.Faker("paragraph", nb_sentences=5)
-    location = factory.SubFactory(LocationFactory, address=factory.Faker("address"))
+    address = factory.Faker("address")
     start_at = factory.Faker("date_time_this_decade")
     image_urls = factory.List([factory.Faker("image_url"), factory.Faker("image_url"), factory.Faker("image_url"),])
 

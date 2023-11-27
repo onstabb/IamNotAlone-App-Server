@@ -1,3 +1,5 @@
+import typing
+
 from pydantic import BaseModel, Field, AliasChoices, constr, model_validator
 
 from location.geopoint import GeoPoint
@@ -16,21 +18,7 @@ ProfileDescription = constr(
 )
 
 
-class LocationIn(LocationProjectBase):
-    current: GeoPoint | None = None
-
-    @model_validator(mode='after')
-    def set_current_coordinates(self) -> 'LocationIn':
-        if self.current is None:
-            self.current = self.city.coordinates
-        return self
-
-
-class LocationOut(LocationProjectBase):
-    pass
-
-
-class UserProfileBase(BaseModel):
+class UserProfileBase(LocationProjectBase):
     name: ProfileName
     gender: Gender
     gender_preference: Gender | None = None
@@ -39,9 +27,16 @@ class UserProfileBase(BaseModel):
     residence_plan: ResidencePlan
 
 
+
 class PrivateUserProfileIn(UserProfileBase):
     birthdate: BirthDate
-    location: LocationIn
+    location: GeoPoint | None = None
+
+    @model_validator(mode='after')
+    def set_current_coordinates(self) -> typing.Self:
+        if self.location is None:
+            self.location = self.city.coordinates
+        return self
 
 
 class PrivateUserProfileOut(PrivateUserProfileIn):
@@ -50,4 +45,4 @@ class PrivateUserProfileOut(PrivateUserProfileIn):
 
 class PublicUserProfileOut(UserProfileBase):
     age: Age = Field(validation_alias=AliasChoices("birthdate", "age"))
-    location: LocationOut
+

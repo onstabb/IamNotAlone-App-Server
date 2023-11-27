@@ -5,11 +5,10 @@ from photos import helpers
 
 
 @pytest.mark.parametrize(
-    "filename",
-    ["sub1.jpg", ]
+    "data",
+    [{"filename": "sub1.jpg", "num": 322}, ]
 )
-def test_token_encoding(filename):
-    data = {"filename": filename, "num": 322}
+def test_token_encoding(data):
     encoded_filename = helpers.filename_token_encode("jpg", **data)
     decoded_data = helpers.filename_token_decode(encoded_filename)
     assert data == decoded_data

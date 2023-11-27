@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import Field, BaseModel
 
 from location.citygeonames import CityGeonames
 

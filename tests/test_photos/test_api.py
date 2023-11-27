@@ -3,17 +3,17 @@ import tempfile
 
 def test_upload_photo(user_factory, client, image_file):
     user = user_factory.create(photo_urls=[], is_active=True)
-    client.bearer_token = user.token
+    client.bearer_token = user.token[0]
     data = {"photo": image_file}
 
     response = client.put(f"/api/v1/users/me/photos/0", files=data)
 
-    assert response.status_code == 200
+    assert response.status_code == 201
 
 
 def test_upload_photo_incorrect_index(user_factory, client, image_file):
     user = user_factory.create(photo_urls=[], is_active=True)
-    client.bearer_token = user.token
+    client.bearer_token = user.token[0]
     data = {"photo": image_file}
 
     response = client.put(f"/api/v1/users/me/photos/1", files=data)

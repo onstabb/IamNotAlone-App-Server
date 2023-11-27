@@ -11,7 +11,7 @@ def test_get_candidates_for_user(user_factory):
     result = service.get_candidates_for_user(user, limit=5)
 
     for first, second in pairwise(result):
-        assert first["profile"]["location"]["distance"] <= second["profile"]["location"]["distance"]
+        assert first["profile"]["distance"] <= second["profile"]["distance"]
 
     for candidate in map(UserPublicOut.model_validate, result):
         candidate: UserPublicOut

@@ -18,7 +18,9 @@ def init_db(**configuration) -> MongoClient:
     Event.register_delete_rule(User, 'subscribers', mongoengine.PULL)
     User.register_delete_rule(Event, 'events', mongoengine.PULL)
 
-    return mongoengine.connect(**configuration)
+    client: MongoClient = mongoengine.connect(**configuration)
+    return client
+
 
 
 def close_db() -> None:

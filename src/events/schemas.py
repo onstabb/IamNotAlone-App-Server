@@ -1,19 +1,15 @@
 from datetime import datetime
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import HttpUrl
 
 from location.geopoint import GeoPoint
+from location.schemas import LocationProjectBase
 
 
-class EventLocationOut(BaseModel):
-    city_id: int
-    current: GeoPoint
-    address: str
-
-
-class EventOut(BaseModel):
+class EventOut(LocationProjectBase):
     title: str
     description: str
-    location: EventLocationOut
     image_urls: list[HttpUrl]
     start_at: datetime
+    address: str
+    location: GeoPoint

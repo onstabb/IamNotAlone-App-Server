@@ -24,4 +24,5 @@ class SmsConfirmationDataOut(BaseModel):
 
 class TokenDataOut(BaseModel):
     access_token: str
+    expires_at: datetime
     new_password: str | None = None

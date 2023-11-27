@@ -8,7 +8,7 @@ from authorization.schemas import (
 )
 from authorization.smsservice.telesign import TelesignService
 from users.models import User
-from security import generate_password
+from security import generate_password, hash_password
 
 
 router: APIRouter = APIRouter(tags=['Authorization'])
@@ -33,12 +33,15 @@ def confirm_sms(data: SmsConfirmationDataIn):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f'SMS-code is invalid')
 
     generated_password: str = generate_password()
+    hashed_password = hash_password(generated_password)
+
     user: User | None = service.get_user_by_phone_number(data.phone_number)
-
-    user = service.update_user_password(user, generated_password) \
-        if user else service.create_user(data.phone_number, generated_password)
-
-    return TokenDataOut(access_token=user.token, new_password=generated_password)
+    user = (
+        service.update_user_password(user, hashed_password)
+        if user else service.create_user(data.phone_number, hashed_password)
+    )
+    token, expires_at = user.token
+    return TokenDataOut(access_token=token, new_password=generated_password, expires_at=expires_at)
 
 
 @router.post("/login", response_model=TokenDataOut, response_model_exclude_none=True)
@@ -49,4 +52,5 @@ def login(user_in: UserCredentialsIn):
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid phone number or password",
         )
 
-    return TokenDataOut(access_token=user.token, new_password=None)
+    token, expires_at = user.token
+    return TokenDataOut(access_token=token, new_password=None, expires_at=expires_at)

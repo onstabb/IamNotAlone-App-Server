@@ -4,7 +4,7 @@
 def test_get_contact(client, contact_factory):
     created_contact = contact_factory.create(active_dialog=True)
     current_user, target_user = created_contact.initiator, created_contact.respondent
-    client.bearer_token = current_user.token
+    client.bearer_token = current_user.token[0]
 
     response = client.get(f"/api/v1/users/me/contacts/{target_user.id}")
 

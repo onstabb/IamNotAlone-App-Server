@@ -10,7 +10,7 @@ def test_get_event_by_id(event_factory):
 
 def test_get_events_by_city_id(event_factory):
     event = event_factory.create(start_at=datehelpers.get_aware_datetime_now(delta_days=1))
-    found_events = service.get_events_by_city_id(event.location.city_id, only_future=True)
+    found_events = service.get_events_by_city_id(event.city_id, only_future=True)
     assert event in found_events
 
 

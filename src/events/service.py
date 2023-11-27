@@ -9,7 +9,7 @@ def get_events_by_city_id(city_id: int, **filters) -> list[Event]:
     if filters.pop("only_future", None):
         filters.update(start_at__gt=get_aware_datetime_now())
 
-    result = Event.objects(location__city_id=city_id, **filters).exclude("subscribers")
+    result = Event.objects(city_id=city_id, **filters).exclude("subscribers")
     return list(result)
 
 

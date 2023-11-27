@@ -13,7 +13,6 @@ from factories.factories import (
     ProfileFactory,
     EventFactory,
 )
-from photos import config as file_config
 from location.database import geonames_db
 from main import app
 from photos.service import set_bucket
@@ -52,12 +51,6 @@ def factory_random(seed):
 
 
 @pytest.fixture(scope="session")
-def temp_file_storage(tmp_path_factory):
-    file_config.IMAGE_FILES_LOCAL_PATH = tmp_path_factory.mktemp("data")
-    return file_config.IMAGE_FILES_LOCAL_PATH
-
-
-@pytest.fixture(scope="session")
 def scheduler():
     scheduler_.start()
     yield scheduler_
@@ -81,7 +74,7 @@ def db_config(factory_random):
 
 
 @pytest.fixture(scope="function")
-def client(db_config, scheduler, city_db, temp_file_storage):
+def client(db_config, scheduler, city_db):
     auth_config.SMS_SERVICE_DISABLED = True
     set_bucket(LocalBucket())
 
@@ -118,5 +111,5 @@ def user(user_factory) -> User:
 
 @pytest.fixture(scope="function")
 def authorized_user(client, user) -> User:
-    client.bearer_token = user.token
+    client.bearer_token = user.token[0]
     return user

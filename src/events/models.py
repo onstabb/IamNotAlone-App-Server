@@ -1,4 +1,4 @@
-from mongoengine import StringField, ListField, ReferenceField, DateTimeField
+from mongoengine import StringField, ListField, ReferenceField, DateTimeField, URLField
 
 from location.models import LocationMixin
 from models import BaseDocument
@@ -10,8 +10,9 @@ class Event(BaseDocument, LocationMixin):
 
     subscribers = ListField(ReferenceField("User")) # type: list
     start_at = DateTimeField(required=True) # type:
-    image_urls = ListField(StringField())   # type: list[str]
+    image_urls = ListField(URLField())   # type: list[str]
+    address = StringField(required=True)
 
     meta = {
-        'indexes': ['location.city_id', [("location.current", "2dsphere")], ]
+        'indexes': ['city_id', ]
     }

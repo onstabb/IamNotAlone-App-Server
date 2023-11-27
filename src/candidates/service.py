@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from users.enums import UserRole
 from users.models import User
 
 
@@ -12,7 +13,8 @@ def get_candidates_for_user(user: User, limit: int = 1) -> list[dict]:
             {"profile.gender_preference": {"$eq": user.profile.gender}},
             {"profile.gender_preference": {"$eq": None}}
         ],
-        "photo_urls": {"$ne": []}
+        "photo_urls": {"$ne": []},
+        "role": {"$nin": UserRole.managers()}
     }
     if user.profile.gender_preference is not None:
         match_query["profile.gender"] = user.profile.gender_preference
@@ -20,8 +22,8 @@ def get_candidates_for_user(user: User, limit: int = 1) -> list[dict]:
 
     pipeline = [
         {"$geoNear": {
-            "near": user.profile.location.current_geo_json,
-            "distanceField": "profile.location.distance",
+            "near": user.profile.geo_json,
+            "distanceField": "profile.distance",
             "query": match_query,
             "spherical": True,
             }
@@ -85,7 +87,7 @@ def get_candidates_for_user(user: User, limit: int = 1) -> list[dict]:
         },
 
         {'$unset': ['events', 'contacts']},
-        {"$sort": {"profile.location.distance": 1, "age_difference": 1, "last_online": 1}, },
+        {"$sort": {"profile.distance": 1, "age_difference": 1, "last_online": 1}, },
         {"$limit": limit},
     ]
 
