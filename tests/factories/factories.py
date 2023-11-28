@@ -3,7 +3,6 @@ import datetime
 import factory
 from factory import fuzzy
 
-
 from contacts import service as contact_service
 from contacts.models import Contact, Message, ContactState
 from events.models import Event
@@ -12,8 +11,6 @@ from reports.enums import ReportReason
 from reports.models import Report
 from userprofile import config as profile_config
 from userprofile.enums import Gender, ResidenceLength, ResidencePlan
-
-
 from tests.factories import generators
 from users.models import User, UserProfile
 
@@ -23,7 +20,6 @@ class _BaseMongoEngineFactory(factory.mongoengine.MongoEngineFactory):
     @classmethod
     def build_json_dict(cls, **kwargs) -> dict:
         result: dict = factory.build(dict, FACTORY_CLASS=cls, **kwargs)
-
         for key, value in cls.__dict__.items():
             if isinstance(value, factory.SubFactory):
                 result[key] = value.get_factory().build_json_dict()

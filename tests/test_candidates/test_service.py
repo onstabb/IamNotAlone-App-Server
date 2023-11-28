@@ -1,6 +1,7 @@
 from itertools import pairwise
 
 from candidates import service
+from users.enums import UserRole
 from users.schemas import UserPublicOut
 
 
@@ -17,3 +18,5 @@ def test_get_candidates_for_user(user_factory):
         candidate: UserPublicOut
         assert user.profile.gender == candidate.profile.gender_preference or not candidate.profile.gender_preference
         assert user.profile.gender_preference == candidate.profile.gender or not user.profile.gender_preference
+        assert user.role not in UserRole.managers()
+

@@ -5,6 +5,8 @@ from starlette.datastructures import FormData
 from starlette.requests import Request
 from starlette_admin import fields as admin_fields, RequestAction
 
+from location.database import geonames_db
+
 
 @dataclass
 class PointField(admin_fields.FloatField):
@@ -26,3 +28,15 @@ class PointField(admin_fields.FloatField):
         self, request: Request, value: dict, action: RequestAction
     ) -> Any:
         return dict(value)
+
+
+class CityField(admin_fields.IntegerField):
+
+    async def serialize_value(
+        self, request: Request, value: Any, action: RequestAction
+    ) -> Any:
+
+        if action in (RequestAction.EDIT, RequestAction.CREATE):
+            return int(value)
+
+        return str(geonames_db.get_city(value))

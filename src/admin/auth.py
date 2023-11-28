@@ -69,7 +69,9 @@ class AdminCredentialsProvider(AuthProvider):
     def get_admin_user(self, request: Request) -> AdminUser:
         user: User = request.state.user
         photo_url = user.photo_urls[0] if len(user.photo_urls) > 0 else None
-        return AdminUser(username=user.phone_number, photo_url=photo_url)
+
+        phone_number = f"{user.phone_number[:-2]}XX"
+        return AdminUser(username=phone_number, photo_url=photo_url)
 
     async def logout(self, request: Request, response: Response) -> Response:
         request.session.clear()

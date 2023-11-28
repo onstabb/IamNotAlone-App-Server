@@ -12,3 +12,6 @@ class CityRow(BaseModel):
     administrative_unit_name: str
     country_name: str
     country_code: str
+
+    def __str__(self):
+        return f"{self.geonameid}: {self.name}, {self.administrative_unit_name}, {self.country_code}"

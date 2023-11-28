@@ -29,7 +29,6 @@ def update_user_password(user: User, password: str) -> User:
 
 def create_admin() -> User:
     password = config.ADMIN_PASSWORD
-
     admin: User = (
         get_user_by_phone_number(config.ADMIN_PHONE_NUMBER) or
         User(
@@ -39,7 +38,6 @@ def create_admin() -> User:
             role=UserRole.ADMIN
         )
     )
-
     admin.save()
 
     log.info(f"Initialized Admin({admin.phone_number}, {password}), Token: {admin.token[0]}")
