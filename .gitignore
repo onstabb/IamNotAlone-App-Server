@@ -105,5 +105,5 @@ venv.bak/
 
 .idea/*
 
-# StaticFiles in project root
-/static
+# Bucket files
+/data/static/bucket

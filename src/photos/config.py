@@ -4,9 +4,9 @@ from pathlib import Path
 import config as global_config
 
 
-IMAGE_FILES_LOCAL_PATH: Path = global_config.STATIC_PATH / "images"
-if not IMAGE_FILES_LOCAL_PATH.exists():
-    IMAGE_FILES_LOCAL_PATH.mkdir()
+BUCKET_FILES_LOCAL_PATH: Path = global_config.STATIC_PATH / "bucket"
+if not BUCKET_FILES_LOCAL_PATH.exists():
+    BUCKET_FILES_LOCAL_PATH.mkdir()
 
 SERVER_STATIC_IMAGES_URL = f'{global_config.SERVER_URL}/static/images'
 SUPPORTED_IMAGE_FORMATS = ('jpeg', 'jpg')

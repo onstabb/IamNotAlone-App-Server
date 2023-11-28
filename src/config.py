@@ -9,7 +9,7 @@ load_dotenv()
 
 BASE_DIR: Path = Path(__file__).parent.parent
 DATA_PATH: Path = BASE_DIR / "data"
-STATIC_PATH: Path = BASE_DIR / "static"
+STATIC_PATH: Path = DATA_PATH / "static"
 if not STATIC_PATH.exists():
     STATIC_PATH.mkdir()
 
