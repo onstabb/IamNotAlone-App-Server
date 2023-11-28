@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -14,22 +15,20 @@ from scheduling import scheduler
 
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="I'm not alone")
-app.include_router(api_router)
-app.mount('/static', StaticFiles(directory=config.STATIC_PATH, check_dir=True), name="static")
-admin.mount_to(app)
 
-
-@app.on_event("startup")
-def startup():
+@asynccontextmanager
+async def lifespan(_app_instance: FastAPI):
     init_db(host=config.DB_URI, db=config.DB_NAME)
     scheduler.start()
     geonames_db.connect()
     create_admin()
-
-
-@app.on_event("shutdown")
-def shutdown():
+    yield
     close_db()
     scheduler.shutdown()
     geonames_db.close()
+
+
+app = FastAPI(title="I'm not alone")
+app.include_router(api_router)
+app.mount('/static', StaticFiles(directory=config.STATIC_PATH, check_dir=True), name="static")
+admin.mount_to(app)
