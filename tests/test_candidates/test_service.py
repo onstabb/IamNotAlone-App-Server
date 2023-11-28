@@ -5,8 +5,8 @@ from users.schemas import UserPublicOut
 
 
 def test_get_candidates_for_user(user_factory):
-    user_factory.create_batch(size=5, active=True)
-    user = user_factory.create(active=True, profile__gender_preference=None)
+    user_factory.create_batch(size=5)
+    user = user_factory.create(profile__gender_preference=None)
 
     result = service.get_candidates_for_user(user, limit=5)
 

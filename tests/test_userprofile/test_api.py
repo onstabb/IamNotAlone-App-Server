@@ -1,7 +1,7 @@
 
 
 def test_create_profile(client, user_factory, userprofile_factory):
-    user = user_factory.create(profile=None, active=True)
+    user = user_factory.create(profile=None)
 
     client.bearer_token = user.token[0]
     request_data = userprofile_factory.build_json_dict()

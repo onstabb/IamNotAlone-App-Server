@@ -2,7 +2,7 @@ import tempfile
 
 
 def test_upload_photo(user_factory, client, image_file):
-    user = user_factory.create(photo_urls=[], is_active=True)
+    user = user_factory.create(photo_urls=[])
     client.bearer_token = user.token[0]
     data = {"photo": image_file}
 
@@ -12,7 +12,7 @@ def test_upload_photo(user_factory, client, image_file):
 
 
 def test_upload_photo_incorrect_index(user_factory, client, image_file):
-    user = user_factory.create(photo_urls=[], is_active=True)
+    user = user_factory.create(photo_urls=[])
     client.bearer_token = user.token[0]
     data = {"photo": image_file}
 

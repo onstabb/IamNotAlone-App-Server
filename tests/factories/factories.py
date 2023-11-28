@@ -8,6 +8,8 @@ from contacts import service as contact_service
 from contacts.models import Contact, Message, ContactState
 from events.models import Event
 from location.database import geonames_db
+from reports.enums import ReportReason
+from reports.models import Report
 from userprofile import config as profile_config
 from userprofile.enums import Gender, ResidenceLength, ResidencePlan
 
@@ -33,6 +35,11 @@ class _BaseMongoEngineFactory(factory.mongoengine.MongoEngineFactory):
         return result
 
 
+class _UsingLocationFactory(_BaseMongoEngineFactory):
+    city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
+    location = factory.LazyAttribute(lambda location: geonames_db.get_city(location.city_id).coordinates)
+
+
 class UserFactory(_BaseMongoEngineFactory):
     class Meta:
         model = User
@@ -41,23 +48,11 @@ class UserFactory(_BaseMongoEngineFactory):
     password = factory.LazyFunction(generators.generate_hashed_password)
     profile = factory.SubFactory("tests.factories.factories.ProfileFactory",)
     photo_urls = factory.List([factory.Faker("image_url"), factory.Faker("image_url")])
-    is_active = fuzzy.FuzzyChoice((False, False, False, True))
-
-    class Params:
-        active = factory.Trait(
-            is_active=True,
-            banned=False
-        )
+    is_active = True
+    banned = False
 
 
-
-
-class LocationFactory(_BaseMongoEngineFactory):
-    city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
-    location = factory.LazyAttribute(lambda location: geonames_db.get_city(location.city_id).coordinates)
-
-
-class ProfileFactory(LocationFactory):
+class ProfileFactory(_UsingLocationFactory):
     class Meta:
         model = UserProfile
 
@@ -87,12 +82,9 @@ class ContactFactory(_BaseMongoEngineFactory):
     )
 
     class Params:
-
         active_dialog = factory.Trait(
             initiator_state=ContactState.ESTABLISHED,
             respondent_state=ContactState.ESTABLISHED,
-            initiator__active=True,
-            respondent__active=True,
             messages=factory.List(
                 [
                     factory.SubFactory(
@@ -117,7 +109,7 @@ class MessageFactory(_BaseMongoEngineFactory):
     text = factory.Faker("paragraph", nb_sentences=4)
 
 
-class EventFactory(LocationFactory):
+class EventFactory(_UsingLocationFactory):
     class Meta:
         model = Event
 
@@ -129,7 +121,6 @@ class EventFactory(LocationFactory):
 
     @factory.post_generation
     def subscribers(self: Event, create: bool, extracted: list[User] | None, **kwargs) -> None:
-
         if not create:
             return
 
@@ -140,3 +131,13 @@ class EventFactory(LocationFactory):
 
         self.subscribers.extend(users)
         self.save()
+
+
+class ReportFactory(_BaseMongoEngineFactory):
+    class Meta:
+        model = Report
+
+    initiator = factory.SubFactory(UserFactory)
+    respondent = factory.SubFactory(UserFactory)
+    reason = factory.Iterator(ReportReason)
+    additional_info = factory.Faker("paragraph", nb_sentences=5)

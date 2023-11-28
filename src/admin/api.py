@@ -2,6 +2,7 @@ from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
 from starlette_admin.contrib.mongoengine import Admin
 
+from admin import config
 from admin.auth import AdminCredentialsProvider
 from admin.converter import MongoengineModelConverter
 from admin.views import EventView, ContactView, UserView
@@ -14,7 +15,7 @@ from users.models import User
 admin = Admin(
     templates_dir=str(DATA_PATH / "templates" / "admin"),
     auth_provider=AdminCredentialsProvider(),
-    middlewares=[Middleware(SessionMiddleware, secret_key="ads1d21m21")]
+    middlewares=[Middleware(SessionMiddleware, secret_key=config.SESSION_SECRET_KEY)]
 )
 
 admin.add_view(UserView(User, converter=MongoengineModelConverter(), icon="fa-solid fa-users"))

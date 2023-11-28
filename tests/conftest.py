@@ -7,12 +7,7 @@ from starlette.testclient import TestClient
 import config
 from authorization import config as auth_config
 from database import init_db, close_db
-from factories.factories import (
-    UserFactory,
-    ContactFactory,
-    ProfileFactory,
-    EventFactory,
-)
+from factories import factories
 from location.database import geonames_db
 from main import app
 from photos.service import set_bucket
@@ -77,7 +72,6 @@ def db_config(factory_random):
 def client(db_config, scheduler, city_db):
     auth_config.SMS_SERVICE_DISABLED = True
     set_bucket(LocalBucket())
-
     client = AppTestClient(app=app)
     yield client
     client.close()
@@ -85,27 +79,32 @@ def client(db_config, scheduler, city_db):
 
 @pytest.fixture(scope="session")
 def user_factory(db_config, city_db):
-    return UserFactory
+    return factories.UserFactory
 
 
 @pytest.fixture(scope="session")
 def contact_factory(db_config, city_db):
-    return ContactFactory
+    return factories.ContactFactory
 
 
 @pytest.fixture(scope="session")
 def userprofile_factory(db_config, city_db):
-    return ProfileFactory
+    return factories.ProfileFactory
 
 
 @pytest.fixture(scope="session")
 def event_factory(db_config, city_db):
-    return EventFactory
+    return factories.EventFactory
+
+
+@pytest.fixture(scope="session")
+def report_factory(db_config, city_db):
+    return factories.ReportFactory
 
 
 @pytest.fixture(scope="function")
 def user(user_factory) -> User:
-    user: User = user_factory.create(active=True)
+    user: User = user_factory.create()
     return user
 
 
