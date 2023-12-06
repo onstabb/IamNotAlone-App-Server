@@ -17,7 +17,6 @@ class PydanticObjectId(ObjectId):
 
     @classmethod
     def validate(cls, value: typing.AnyStr | ObjectId | LazyReference) -> typing.Self:
-
         if isinstance(value, bytes):
             value = value.decode("utf-8")
 
@@ -33,7 +32,6 @@ class PydanticObjectId(ObjectId):
     def __get_pydantic_core_schema__(
             cls, _source: typing.Any, _handler: GetCoreSchemaHandler
     ) -> core_schema.CoreSchema:
-
         schema = core_schema.chain_schema(
             [
                 core_schema.union_schema(
@@ -46,7 +44,6 @@ class PydanticObjectId(ObjectId):
                 core_schema.no_info_plain_validator_function(cls.validate)
             ]
         )
-
         return core_schema.json_or_python_schema(
             serialization=core_schema.plain_serializer_function_ser_schema(lambda instance: str(instance)),
             python_schema=schema,

@@ -27,7 +27,7 @@ def test_confirm_sms(client, user_factory):
     assert new_password
 
 
-def test_incorrect_login(client, user_factory):
+def test_login_incorrect(client, user_factory):
     user = user_factory.build(password="incorrect")
 
     response = client.post(

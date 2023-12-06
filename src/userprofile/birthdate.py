@@ -1,6 +1,6 @@
 __all__ = ('BirthDate', 'Age')
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Annotated
 
 from pydantic import PastDate, AfterValidator, BeforeValidator, PositiveInt
@@ -16,10 +16,12 @@ def validate_birthdate(value: date) -> date:
     return value
 
 
-def validate_age(value: int | date) -> int:
+def validate_age(value: int | date | datetime) -> int:
     if isinstance(value, date) or isinstance(value, datetime):
-        delta = date.today() - date(value.year, value.month, value.day)
-        return delta.days
+        birthdate = date(value.year, value.month, value.day)
+        age = (date.today() - birthdate) // timedelta(days=365.2425)
+        return age
+
     return value
 
 

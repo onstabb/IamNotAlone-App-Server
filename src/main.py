@@ -28,7 +28,7 @@ async def lifespan(_app_instance: FastAPI):
     geonames_db.close()
 
 
-app = FastAPI(title="I'm not alone")
+app = FastAPI(title="I'm not alone", lifespan=lifespan)
 app.include_router(api_router)
 app.mount('/static', StaticFiles(directory=config.STATIC_PATH, check_dir=True), name="static")
 admin.mount_to(app)

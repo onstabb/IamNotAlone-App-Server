@@ -5,9 +5,10 @@ from users.enums import UserRole
 from users.schemas import UserPublicOut
 
 
-def test_get_candidates_for_user(user_factory):
+def test_get_candidates_for_user(user_factory, contact_factory):
     user_factory.create_batch(size=5)
     user = user_factory.create(profile__gender_preference=None)
+    existed_contact = contact_factory.create(initiator=user, respondent__profile__gender_preference=None)
 
     result = service.get_candidates_for_user(user, limit=5)
 
@@ -16,7 +17,7 @@ def test_get_candidates_for_user(user_factory):
 
     for candidate in map(UserPublicOut.model_validate, result):
         candidate: UserPublicOut
+        assert candidate.id != existed_contact.respondent.id
         assert user.profile.gender == candidate.profile.gender_preference or not candidate.profile.gender_preference
         assert user.profile.gender_preference == candidate.profile.gender or not user.profile.gender_preference
         assert user.role not in UserRole.managers()
-

@@ -111,7 +111,12 @@ GROUP BY
     def connect(self, data_source: Path | str = config.DB_GEONAMES_DATA_SOURCE) -> None:
 
         self.__conn = connect(data_source, check_same_thread=False)
-        self.__conn.create_function("DISTANCE", 4, helpers.calculate_distance_, deterministic=True)
+        self.__conn.create_function(
+            name="DISTANCE",
+            narg=4,
+            func=lambda long1, lat1, long2, lat2: helpers.calculate_distance((long1, lat1), (long2, lat2)),
+            deterministic=True
+        )
         self.__conn.row_factory = _convert_row
         self.__cursor = self.__conn.cursor()
         log.info('Connected source "%s""', data_source)

@@ -29,14 +29,13 @@ def get_contact(current_user: CurrentActiveCompletedUser, target_user: TargetAct
 
 @router.post("", response_model=ContactOut, status_code=status.HTTP_201_CREATED)
 def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveCompletedUser):
-
     if data_in.user_id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You cannot create contact with yourself",
         )
 
     target_user = get_active_completed_user(data_in.user_id)
-    contact: Contact | None = service.get_contact_by_users_pair(current_user.id, target_user.id)
+    contact: Contact | None = service.get_contact_by_users_pair(current_user, target_user)
 
     if contact:
         raise HTTPException(

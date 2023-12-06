@@ -30,7 +30,7 @@ def get_candidates_for_user(user: User, limit: int = 1) -> list[dict]:
         },
 
         {"$lookup":
-            {"from": "user_contact",
+            {"from": "contact",
              "let": {"user_id": "$_id"},
              "pipeline": [
                 {"$match":

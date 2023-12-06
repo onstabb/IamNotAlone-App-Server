@@ -23,13 +23,13 @@ def get_current_user_by_token(subject: str = Depends(JWTBearer), ) -> User:
 
 def get_current_active_user(user: User = Depends(get_current_user_by_token)) -> User:
     if not user.is_active:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Activation is required")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Activation is required")
     return user
 
 
 def get_current_active_completed_user(user: User = Depends(get_current_active_user)) -> User:
     if not user.profile or not user.photo_urls:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Completed userprofile is required")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Completed profile is required")
     return user
 
 
@@ -43,6 +43,7 @@ def get_active_completed_user(user_id: PydanticObjectId) -> User:
     return user
 
 
+CurrentUser = Annotated[User, Depends(get_current_user_by_token)]
 CurrentActiveUser = Annotated[User, Depends(get_current_active_user)]
 CurrentActiveCompletedUser = Annotated[User, Depends(get_current_active_completed_user)]
 TargetActiveCompletedUser = Annotated[User, Depends(get_active_completed_user)]
