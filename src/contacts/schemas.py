@@ -1,11 +1,11 @@
 from datetime import datetime
 from functools import cached_property
 
-from pydantic import BaseModel, Field, constr, computed_field
+from pydantic import AliasChoices, BaseModel, Field, constr, computed_field
 
 from contacts import config
 from contacts.enums import ContactState
-from models import PydanticObjectId
+from models import PydanticObjectId, DateTimeFromObjectId
 from users.schemas import UserPublicOut
 
 
@@ -22,13 +22,11 @@ class MessageOut(MessageBase):
     date: datetime = Field(validation_alias="created_at")
 
 
-class ContactOut(BaseModel):
+class ContactBaseOut(BaseModel):
     initiator: UserPublicOut | PydanticObjectId = Field(exclude=True)
     respondent: UserPublicOut | PydanticObjectId = Field(exclude=True)
     opposite_user: UserPublicOut | None = Field(exclude=True, default=None)
-
-    status: ContactState | None
-    messages: list[MessageOut]
+    created_at: DateTimeFromObjectId = Field(validation_alias=AliasChoices("_id", "id"), )
 
     @computed_field
     @cached_property
@@ -42,6 +40,11 @@ class ContactOut(BaseModel):
             return self.respondent
 
         return None
+
+
+class ContactOut(ContactBaseOut):
+    status: ContactState | None
+    messages: list[MessageOut]
 
 
 class ContactStateIn(BaseModel):

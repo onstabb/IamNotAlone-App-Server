@@ -103,11 +103,13 @@ def update_contact_status(contact_state_data: ContactStateIn, user: User, contac
 
 
 def create_message(contact: Contact, sender: User, message_in: MessageIn) -> Message:
-    return contact.messages.create(sender=sender, text=message_in.text)
+    message = contact.messages.create(sender=sender, text=message_in.text)
+    contact.save()
+    return message
 
 
 def get_messages_count_from_sender(contact: Contact, sender: User) -> int:
-    if sender not in (contact.initiator, contact.respondent):
+    if sender.id not in (contact.initiator, contact.respondent):
         raise ValueError(f"Contact does not contain user with {sender.id}")
 
     return len(contact.messages.filter(sender=sender))

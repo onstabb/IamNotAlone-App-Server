@@ -16,4 +16,9 @@ def get_likes_for_user(user: User) -> list[Contact]:
     result = Contact.objects(
         respondent=user, initiator_state=ContactState.ESTABLISHED, status=None
     ).exclude("respondent")
-    return list(result)
+
+    def set_respondent_id(contact: Contact) -> Contact:
+        contact.respondent = user.id
+        return contact
+
+    return list(contact for contact in map(set_respondent_id, result))

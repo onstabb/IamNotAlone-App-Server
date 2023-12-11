@@ -84,7 +84,7 @@ def send_message(
         current_user: CurrentActiveCompletedUser,
         target_user: TargetActiveCompletedUser,
 ):
-    contact = service.get_contact_by_users_pair(current_user.id, target_user.id)
+    contact = service.get_contact_by_users_pair(current_user, target_user)
     if not contact or not contact.established:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Contact must be established")
 
@@ -92,6 +92,6 @@ def send_message(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Limit of the messages has been exceeded")
 
     message = service.create_message(contact, sender=current_user, message_in=message_in)
-    message_out = MessageOut.model_validate(message)
+    message_out = MessageOut.model_validate(message, from_attributes=True)
     notification_manager.put_notification(message_out, recipient_id=target_user.id, notification_type=NotificationType.MESSAGE)
     return message_out

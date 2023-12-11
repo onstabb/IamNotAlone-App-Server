@@ -8,7 +8,7 @@ from mongoengine import (
     DoesNotExist,
 )
 from mongoengine.base import BaseField, LazyReference
-from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler, PlainSerializer
+from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler, PlainSerializer, BeforeValidator
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
@@ -82,4 +82,4 @@ class BaseDocument(Document):
 
 
 SerializeDocToId = PlainSerializer(lambda doc: doc.id, return_type=str, when_used="json")
-
+DateTimeFromObjectId = typing.Annotated[datetime, BeforeValidator(lambda value: value.generation_time)]
