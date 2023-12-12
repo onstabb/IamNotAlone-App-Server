@@ -51,23 +51,26 @@ def get_contacts_for_user(user: User, *, limit: int = 0, **filters) -> list[dict
     return result
 
 
-def get_contact_by_users_pair(user: User, target_user: User) -> Contact | None:
+def get_contact_by_users_pair(
+        current_user: User, target_user: User, use_id_for_current_user: bool = True
+) -> Contact | None:
     """
     Retrieve a Contact instance for the given pair of users.
 
-    :param user: The first user in the pair.
+    :param current_user: The first user in the pair.
     :param target_user: The second user in the pair.
+    :param use_id_for_current_user: if True then current_user object in found contact will be changed to the ObjectId
     :return: A Contact instance if it exists.
 
-    Note: if a contact is found, this function updates the Contact instance by setting
-    the appropriate user ID based on the role of the provided 'user' in the contact. If 'user'
-    is the respondent, the 'respondent' attribute in the Contact instance is set to the user's ID.
-    If 'user' is the initiator, the 'initiator' attribute is set to the user's ID.
+    Note: if a contact is found and parameter `use_id_for_current_user` is True,
+    this function updates the Contact instance by setting the appropriate user ID based on the role of the provided
+    'user' in the contact. If 'user' is the respondent, the 'respondent' attribute in the Contact instance is set to the
+    user's ID. If 'user' is the initiator, the 'initiator' attribute is set to the user's ID.
     """
 
     query = (
-            (Query(initiator=user) & Query(respondent=target_user)) |
-            (Query(respondent=user) & Query(initiator=target_user))
+            (Query(initiator=current_user) & Query(respondent=target_user)) |
+            (Query(respondent=current_user) & Query(initiator=target_user))
     )
     try:
         contact: Contact = Contact.objects.get(query)
@@ -75,10 +78,11 @@ def get_contact_by_users_pair(user: User, target_user: User) -> Contact | None:
         return None
 
     # From this we cand understand who is target user
-    if user == contact.respondent:
-        contact.respondent = user.id
-    else:
-        contact.initiator = user.id
+    if use_id_for_current_user:
+        if current_user == contact.respondent:
+            contact.respondent = current_user.id
+        else:
+            contact.initiator = current_user.id
 
     return contact
 
@@ -109,7 +113,7 @@ def create_message(contact: Contact, sender: User, message_in: MessageIn) -> Mes
 
 
 def get_messages_count_from_sender(contact: Contact, sender: User) -> int:
-    if sender.id not in (contact.initiator, contact.respondent):
+    if sender not in (contact.initiator, contact.respondent):
         raise ValueError(f"Contact does not contain user with {sender.id}")
 
     return len(contact.messages.filter(sender=sender))

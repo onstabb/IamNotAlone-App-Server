@@ -43,7 +43,6 @@ def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveComp
         )
 
     contact = service.create_contact_by_initiator(current_user, target_user, data_in)
-
     if data_in.action == ContactState.ESTABLISHED:
         notification_manager.put_notification(
             UserPublicOut.model_validate(current_user, from_attributes=True),
@@ -60,7 +59,7 @@ def update_contact_state(
         current_user: CurrentActiveCompletedUser,
         state_data: ContactStateIn,
 ):
-    contact = service.get_contact_by_users_pair(current_user.id, target_user.id)
+    contact = service.get_contact_by_users_pair(current_user, target_user,  use_id_for_current_user=False)
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact doesn't exists")
 
@@ -84,7 +83,7 @@ def send_message(
         current_user: CurrentActiveCompletedUser,
         target_user: TargetActiveCompletedUser,
 ):
-    contact = service.get_contact_by_users_pair(current_user, target_user)
+    contact = service.get_contact_by_users_pair(current_user, target_user, use_id_for_current_user=False)
     if not contact or not contact.established:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Contact must be established")
 
