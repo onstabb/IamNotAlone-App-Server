@@ -3,13 +3,14 @@ from mongoengine import (
     DoesNotExist
 )
 
-from contacts.enums import ContactState
-from contacts.models import Contact, CONTACT_RESULT_TABLE, Message
-from contacts.schemas import ContactStateIn, ContactCreateDataIn, MessageIn
+from contacts.enums import ContactState, ContactUpdateAction
+from contacts.models import Contact, Message
+from contacts.schemas import ContactCreateDataIn, MessageIn
+from datehelpers import get_aware_datetime_now
 from users.models import User
 
 
-def get_contacts_for_user(user: User, *, limit: int = 0, **filters) -> list[dict]:
+def get_contacts_by_user(user: User, *, limit: int = 0, **filters) -> list[dict]:
     pipeline = [
         {
             "$match": {
@@ -27,7 +28,18 @@ def get_contacts_for_user(user: User, *, limit: int = 0, **filters) -> list[dict
                         "then": "$respondent",
                         "else": "$initiator"
                     }
-                }
+                },
+            }
+        },
+        {
+            "$addFields": {
+                "opposite_user_last_update_at": {
+                    "$cond": {
+                        "if": {"$eq": ["$initiator", "$opposite_user"]},
+                        "then": "$initiator_last_update_at",
+                        "else": "$respondent_last_update_at"
+                    }
+                },
             }
         },
         {
@@ -51,63 +63,64 @@ def get_contacts_for_user(user: User, *, limit: int = 0, **filters) -> list[dict
     return result
 
 
-def get_contact_by_users_pair(
-        current_user: User, target_user: User, use_id_for_current_user: bool = True
-) -> Contact | None:
+def get_contact_by_users_pair(current_user: User, target_user: User) -> Contact | None:
     """
     Retrieve a Contact instance for the given pair of users.
 
     :param current_user: The first user in the pair.
     :param target_user: The second user in the pair.
-    :param use_id_for_current_user: if True then current_user object in found contact will be changed to the ObjectId
     :return: A Contact instance if it exists.
-
-    Note: if a contact is found and parameter `use_id_for_current_user` is True,
-    this function updates the Contact instance by setting the appropriate user ID based on the role of the provided
-    'user' in the contact. If 'user' is the respondent, the 'respondent' attribute in the Contact instance is set to the
-    user's ID. If 'user' is the initiator, the 'initiator' attribute is set to the user's ID.
     """
 
     query = (
-            (Query(initiator=current_user) & Query(respondent=target_user)) |
-            (Query(respondent=current_user) & Query(initiator=target_user))
+        (Query(initiator=current_user) & Query(respondent=target_user))
+        | (Query(respondent=current_user) & Query(initiator=target_user))
     )
     try:
         contact: Contact = Contact.objects.get(query)
     except DoesNotExist:
         return None
 
-    # From this we cand understand who is target user
-    if use_id_for_current_user:
-        if current_user == contact.respondent:
-            contact.respondent = current_user.id
-        else:
-            contact.initiator = current_user.id
-
     return contact
 
 
 def create_contact_by_initiator(initiator: User, respondent: User, data_in: ContactCreateDataIn) -> Contact:
-    contact = Contact(initiator=initiator, respondent=respondent, initiator_state=data_in.action)
-    contact.status = get_contact_status(contact.respondent_state, contact.initiator_state)
+    contact = Contact(initiator=initiator, respondent=respondent, initiator_state=data_in.state)
     contact.save()
     return contact
 
 
-def update_contact_status(contact_state_data: ContactStateIn, user: User, contact: Contact) -> Contact:
+def update_contact(
+        contact_update_action: ContactUpdateAction, user: User, contact: Contact, save: bool = True
+) -> Contact:
+    user_role = ""
     if contact.initiator == user:
-        contact.initiator_state = contact_state_data.action
-
+        user_role = "initiator"
     elif contact.respondent == user:
-        contact.respondent_state = contact_state_data.action
+        user_role = "respondent"
+    else:
+        ValueError(f"Contact does not contain user {user.id}")
 
-    contact.status = get_contact_status(contact.respondent_state, contact.initiator_state)
-    contact.save()
+    if contact_update_action != ContactUpdateAction.SEEN:
+        action_states = {
+            ContactUpdateAction.BLOCK: ContactState.BLOCKED,
+            ContactUpdateAction.REFUSE: ContactState.REFUSED,
+            ContactUpdateAction.ESTABLISH: ContactState.ESTABLISHED,
+        }
+        if state := action_states.get(contact_update_action):
+            setattr(contact, f"{user_role}_state", state)
+    else:
+        setattr(contact, f"{user_role}_last_update_at", get_aware_datetime_now())
+
+    if save:
+        contact.save()
+
     return contact
 
 
 def create_message(contact: Contact, sender: User, message_in: MessageIn) -> Message:
     message = contact.messages.create(sender=sender, text=message_in.text)
+    update_contact(ContactUpdateAction.SEEN, sender, contact, save=False)
     contact.save()
     return message
 
@@ -118,9 +131,3 @@ def get_messages_count_from_sender(contact: Contact, sender: User) -> int:
 
     return len(contact.messages.filter(sender=sender))
 
-
-def get_contact_status(state_1: ContactState | None, state_2: ContactState | None) -> ContactState | None:
-    enum_list: list[ContactState | None] = [None] + list(ContactState)
-    index_1: int = enum_list.index(state_1)
-    index_2: int = enum_list.index(state_2)
-    return CONTACT_RESULT_TABLE[index_1][index_2]

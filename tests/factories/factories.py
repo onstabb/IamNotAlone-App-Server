@@ -3,11 +3,10 @@ import datetime
 import factory
 from factory import fuzzy
 
-from contacts import service as contact_service
 from contacts.models import Contact, Message, ContactState
 from events.models import Event
 from location.database import geonames_db
-from reports.enums import ReportReason
+from reports.enums import ReportType
 from reports.models import Report
 from userprofile import config as profile_config
 from userprofile.enums import Gender, ResidenceLength, ResidencePlan
@@ -73,9 +72,6 @@ class ContactFactory(_BaseMongoEngineFactory):
     respondent = factory.SubFactory(UserFactory)
     initiator_state = factory.Iterator([contact for contact in ContactState] + [None])
     respondent_state = factory.Iterator([contact for contact in ContactState] + [None])
-    status = factory.LazyAttribute(
-        lambda contact: contact_service.get_contact_status(contact.initiator_state, contact.respondent_state)
-    )
 
     class Params:
         active_dialog = factory.Trait(
@@ -135,5 +131,5 @@ class ReportFactory(_BaseMongoEngineFactory):
 
     initiator = factory.SubFactory(UserFactory)
     respondent = factory.SubFactory(UserFactory)
-    reason = factory.Iterator(ReportReason)
+    type = factory.Iterator(ReportType)
     additional_info = factory.Faker("paragraph", nb_sentences=5)

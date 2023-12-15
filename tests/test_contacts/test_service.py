@@ -7,7 +7,7 @@ def test_create_contact(user_factory):
     first_user, second_user = user_factory.create(), user_factory.create()
 
     contact = service.create_contact_by_initiator(
-        first_user, second_user, ContactCreateDataIn(action=ContactState.ESTABLISHED, user_id=second_user.id)
+        first_user, second_user, ContactCreateDataIn(state=ContactState.ESTABLISHED, user_id=second_user.id)
     )
 
     assert contact.initiator == first_user
@@ -19,7 +19,7 @@ def test_get_contacts_for_user(contact_factory):
 
     found_contacts = [
         ContactOut.model_validate(document)
-        for document in service.get_contacts_for_user(contact.initiator, status=ContactState.ESTABLISHED)
+        for document in service.get_contacts_by_user(contact.initiator, status=ContactState.ESTABLISHED)
     ]
 
     for contact_out in found_contacts:
@@ -36,7 +36,7 @@ def test_get_contact_by_user_pair(contact_factory):
     found_contact = service.get_contact_by_users_pair(current_user, target_user)
 
     assert found_contact == contact
-    assert found_contact.initiator == current_user.id
+    assert found_contact.initiator == current_user
     assert found_contact.respondent == target_user
 
 

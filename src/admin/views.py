@@ -101,7 +101,7 @@ class ReportView(ModelView):
     fields = [
         "initiator",
         "respondent",
-        "reason",
+        "type",
         "additional_info",
         "closed",
     ]

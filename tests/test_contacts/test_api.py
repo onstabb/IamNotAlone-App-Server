@@ -9,5 +9,5 @@ def test_get_contact(client, contact_factory):
     response = client.get(f"/api/v1/users/me/contacts/{target_user.id}")
 
     response_data = response.json()
-    assert response_data["user"]["id"] == str(target_user.id)
+    assert response_data["opposite_user"]["id"] == str(target_user.id)
     assert response_data["status"] == created_contact.status.value

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Query
 
 from contacts import config, service
-from contacts.enums import ContactState
+from contacts.enums import ContactState, ContactUpdateAction
 from contacts.models import Contact
-from contacts.schemas import ContactStateIn, ContactCreateDataIn, ContactOut, MessageIn, MessageOut
+from contacts.schemas import ContactUpdateIn, ContactCreateDataIn, ContactOut, MessageIn, MessageOut
 from notifications.enums import NotificationType
 from notifications.manager import notification_manager
 from users.dependencies import CurrentActiveCompletedUser, TargetActiveCompletedUser, get_active_completed_user
@@ -19,12 +19,14 @@ def get_contacts(
         contact_status: ContactState = Query(alias="status", default=ContactState.ESTABLISHED),
         limit: int = 0,
 ):
-    return service.get_contacts_for_user(current_user, limit=limit, status=contact_status)
+    return service.get_contacts_by_user(current_user, limit=limit, status=contact_status)
 
 
 @router.get("/{user_id}", response_model=ContactOut)
 def get_contact(current_user: CurrentActiveCompletedUser, target_user: TargetActiveCompletedUser):
-    return service.get_contact_by_users_pair(current_user, target_user)
+    contact = service.get_contact_by_users_pair(current_user, target_user)
+    contact.reset_current_user(current_user)
+    return contact
 
 
 @router.post("", response_model=ContactOut, status_code=status.HTTP_201_CREATED)
@@ -36,7 +38,6 @@ def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveComp
 
     target_user = get_active_completed_user(data_in.user_id)
     contact: Contact | None = service.get_contact_by_users_pair(current_user, target_user)
-
     if contact:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail=f"Contact with profile `{target_user.id}` already exists"
@@ -49,31 +50,34 @@ def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveComp
             target_user.id,
             NotificationType.LIKE
         )
-
+    contact.reset_current_user(current_user)
     return contact
 
 
 @router.patch("/{user_id}", response_model=ContactOut)
-def update_contact_state(
+def update_contact(
         target_user: TargetActiveCompletedUser,
         current_user: CurrentActiveCompletedUser,
-        state_data: ContactStateIn,
+        update_data: ContactUpdateIn,
 ):
-    contact = service.get_contact_by_users_pair(current_user, target_user,  use_id_for_current_user=False)
+    contact = service.get_contact_by_users_pair(current_user, target_user)
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact doesn't exists")
 
-    if contact.status == ContactState.BLOCKED or (contact.status and state_data.action != ContactState.BLOCKED):
+    if contact.status == ContactState.BLOCKED:
         return contact
 
-    service.update_contact_status(state_data, current_user, contact)
-    if contact.established and current_user == contact.respondent:
+    if contact.status and update_data.action not in (ContactUpdateAction.BLOCK, ContactUpdateAction.SEEN):
+        return contact
+
+    service.update_contact(update_data.action, current_user, contact)
+    if update_data.action == ContactUpdateAction.ESTABLISH and contact.established and current_user == contact.respondent:
         notification_manager.put_notification(
             UserPublicOut.model_validate(current_user, from_attributes=True),
-            contact.initiator,
-            NotificationType.CONTACT_ESTABLISHED
+            recipient_id=contact.initiator,
+            notification_type=NotificationType.CONTACT_ESTABLISHED
         )
-
+    contact.reset_current_user(current_user)
     return contact
 
 
@@ -83,14 +87,16 @@ def send_message(
         current_user: CurrentActiveCompletedUser,
         target_user: TargetActiveCompletedUser,
 ):
-    contact = service.get_contact_by_users_pair(current_user, target_user, use_id_for_current_user=False)
+    contact = service.get_contact_by_users_pair(current_user, target_user)
     if not contact or not contact.established:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Contact must be established")
 
     if service.get_messages_count_from_sender(contact, current_user) >= config.MAX_SENT_MESSAGES:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Limit of the messages has been exceeded")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Limit of the messages is exceeded")
 
     message = service.create_message(contact, sender=current_user, message_in=message_in)
     message_out = MessageOut.model_validate(message, from_attributes=True)
-    notification_manager.put_notification(message_out, recipient_id=target_user.id, notification_type=NotificationType.MESSAGE)
+    notification_manager.put_notification(
+        message_out, recipient_id=target_user.id, notification_type=NotificationType.MESSAGE
+    )
     return message_out
