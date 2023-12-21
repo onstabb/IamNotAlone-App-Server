@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.INFO)
 async def lifespan(_app_instance: FastAPI):
     init_db(host=config.DB_URI, db=config.DB_NAME)
     scheduler.start()
-    geonames_db.connect()
+    geonames_db.connect(datasource=config.DB_GEONAMES_DATA_SOURCE)
     create_admin()
     yield
     close_db()

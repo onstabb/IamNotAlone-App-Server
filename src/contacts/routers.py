@@ -44,7 +44,7 @@ def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveComp
         )
 
     contact = service.create_contact_by_initiator(current_user, target_user, data_in)
-    if data_in.action == ContactState.ESTABLISHED:
+    if data_in.state == ContactState.ESTABLISHED:
         notification_manager.put_notification(
             UserPublicOut.model_validate(current_user, from_attributes=True),
             target_user.id,

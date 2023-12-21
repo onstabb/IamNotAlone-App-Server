@@ -6,12 +6,16 @@ from location.geopoint import GeoPoint
 class CityRow(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    geonameid: int
+    id: int
     name: str
-    coordinates: GeoPoint
-    administrative_unit_name: str
+    longitude: float
+    latitude: float
+    administrative_name: str
     country_name: str
-    country_code: str
+
+    @property
+    def coordinates(self) -> list[float, float]:
+        return [self.longitude, self.latitude]
 
     def __str__(self):
-        return f"{self.geonameid}: {self.name}, {self.administrative_unit_name}, {self.country_code}"
+        return f"{self.id}: {self.name}, {self.administrative_name}, {self.country_name}"

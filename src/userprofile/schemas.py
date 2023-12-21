@@ -35,7 +35,7 @@ class PrivateUserProfileIn(UserProfileBase):
     @model_validator(mode='after')
     def set_current_coordinates(self) -> typing.Self:
         if self.location is None:
-            self.location = self.city.coordinates
+            self.location = self.city.longitude, self.city.latitude
         return self
 
 

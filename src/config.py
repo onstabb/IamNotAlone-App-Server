@@ -18,6 +18,7 @@ SERVER_URL: str = os.getenv("SERVER_URL", "http://127.0.0.1:8000")
 DB_NAME: str = os.getenv("DB_NAME", "iamnotalone")
 DB_URI: str = os.getenv("DB_URI", "localhost")
 
+DB_GEONAMES_DATA_SOURCE: Path = DATA_PATH / "geo" / "data.db"
 
 ACCESS_TOKEN_EXPIRE_DAYS: int = 14
 AUTH_ALGORYTHM: str = os.getenv("AUTH_ALGORYTHM", "HS256")

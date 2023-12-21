@@ -54,7 +54,7 @@ def scheduler():
 
 @pytest.fixture(scope="session")
 def city_db():
-    geonames_db.connect()
+    geonames_db.connect(datasource=config.DB_GEONAMES_DATA_SOURCE)
     yield geonames_db
     geonames_db.close()
 

@@ -18,10 +18,8 @@ def _get_random(random_obj: Random | None = None) -> Random:
 
 def generate_random_mobile_number(random: Random | None = None) -> str:
     random = _get_random(random)
-
     while True:
         number = "+380" + str(random.randint(50, 99)) + str(random.randint(1000000, 9999999))
-
         try:
             return validate_mobile_phone_number(number)
         except ValueError:
@@ -34,5 +32,5 @@ def generate_hashed_password() -> str:
 
 def get_random_city(random: Random | None = None) -> CityRow:
     random =  _get_random(random)
-    city = geonames_db.get_city_by_row_id(random.randint(0, 17391))
+    city = geonames_db.get_city_by_row_id(random.randint(0, 15760))
     return city

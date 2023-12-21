@@ -29,6 +29,13 @@ def get_contacts_by_user(user: User, *, limit: int = 0, **filters) -> list[dict]
                         "else": "$initiator"
                     }
                 },
+                "last_update_at": {
+                    "$cond": {
+                        "if": {"$eq": ["$initiator", user.id]},
+                        "then": "$initiator_last_update_at",
+                        "else": "$respondent_last_update_at",
+                    }
+                }
             }
         },
         {

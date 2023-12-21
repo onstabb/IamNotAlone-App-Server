@@ -31,7 +31,7 @@ class _BaseMongoEngineFactory(factory.mongoengine.MongoEngineFactory):
 
 
 class _UsingLocationFactory(_BaseMongoEngineFactory):
-    city_id = factory.LazyFunction(lambda: generators.get_random_city().geonameid)
+    city_id = factory.LazyFunction(lambda: generators.get_random_city().id)
     location = factory.LazyAttribute(lambda location: geonames_db.get_city(location.city_id).coordinates)
 
 
