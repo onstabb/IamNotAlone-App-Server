@@ -26,11 +26,9 @@ class BaseSmsService(ABC):
         job: Job | None = scheduler.get_job(task_key, jobstore="sms_service")
         if job:
             scheduler.remove_job(task_key, jobstore="sms_service")
-        cls._storage.pop(task_key, "")
 
     @classmethod
     def _store_temporary_code(cls, code: SmsCode, phone_number: MobilePhoneNumber) -> datetime:
-
         cls._clear_task(phone_number)
         cls._storage[phone_number] = code
 
@@ -47,14 +45,13 @@ class BaseSmsService(ABC):
         return expires_at
 
     @classmethod
-    def verify_code_and_clear(cls, phone_number: MobilePhoneNumber, code: SmsCode) -> bool:
+    def verified(cls, phone_number: MobilePhoneNumber, code: SmsCode) -> bool:
+        return cls._storage.get(phone_number, "") == code
 
-        verifying_code: SmsCode = cls._storage.get(phone_number, "")
-        if verifying_code != code:
-            return False
-
+    @classmethod
+    def clear(cls, phone_number: MobilePhoneNumber) -> None:
         cls._clear_task(phone_number)
-        return True
+        cls._storage.pop(phone_number, "")
 
     @classmethod
     def __remove_code(cls, phone_number: MobilePhoneNumber) -> None:

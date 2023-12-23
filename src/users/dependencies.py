@@ -10,7 +10,7 @@ from users.models import User
 
 
 
-def get_current_user_by_token(subject: str = Depends(JWTBearer), ) -> User:
+def get_current_user_by_token(subject: str = Depends(JWTBearer),) -> User:
     user: User | None = service.get_user_by_id(user_id=subject)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")

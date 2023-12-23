@@ -13,7 +13,8 @@ router = APIRouter()
     "",
     response_model=UserPrivateOut,
     responses={
-        status.HTTP_200_OK: {"detail": "Profile updated"}, status.HTTP_201_CREATED: {"detail": "Profile created"},
+        status.HTTP_200_OK: {"detail": "Profile updated"},
+        status.HTTP_201_CREATED: {"detail": "Profile created"},
     },
 )
 def upsert_profile(profile_data: PrivateUserProfileIn, response: Response, user: CurrentActiveUser):

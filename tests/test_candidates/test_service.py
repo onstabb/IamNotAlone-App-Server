@@ -10,7 +10,7 @@ def test_get_candidates_for_user(user_factory, contact_factory):
     user = user_factory.create(profile__gender_preference=None)
     existed_contact = contact_factory.create(initiator=user, respondent__profile__gender_preference=None)
 
-    result = service.get_candidates_for_user(user, limit=5)
+    result = service.get_candidates_by_user(user, limit=5)
 
     for first, second in pairwise(result):
         assert first["profile"]["distance"] <= second["profile"]["distance"]

@@ -12,8 +12,8 @@ router: APIRouter = APIRouter()
 @router.put("/{list_index}", response_model=UserPrivateOut)
 def update_profile_photo(
         photo: UploadFile,
-        response: Response,
         current_user: CurrentActiveUser,
+        response: Response,
         list_index: int = Path(lt=config.MAX_USER_PHOTOS, ge=0),
 ):
     if list_index > len(current_user.photo_urls):
@@ -44,7 +44,6 @@ def update_profile_photo(
         filename=helpers.filename_token_encode(extension, user_id=str(current_user.id), index=list_index),
         ContentType=photo.content_type
     )
-
     response.status_code = status.HTTP_201_CREATED if len(current_user.photo_urls) == list_index else status.HTTP_200_OK
     service.upsert_photo_url(image_url, user=current_user, index=list_index)
     return current_user

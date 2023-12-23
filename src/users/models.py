@@ -11,7 +11,6 @@ from mongoengine import (
     ReferenceField,
 )
 
-
 from datehelpers import get_aware_datetime_now
 from models import BaseDocument
 from userprofile.models import UserProfile
