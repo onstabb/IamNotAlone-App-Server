@@ -10,7 +10,7 @@ router: APIRouter = APIRouter()
 
 
 @router.put("/{list_index}", response_model=UserPrivateOut)
-def update_profile_photo(
+def update_user_photo(
         photo: UploadFile,
         current_user: CurrentActiveUser,
         response: Response,

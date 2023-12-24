@@ -87,7 +87,7 @@ def get_candidates_by_user(user: User, limit: int = 1) -> list[dict]:
         },
 
         {'$unset': ['events', 'contacts']},
-        {"$sort": {"profile.distance": 1, "age_difference": 1, "last_online": 1}, },
+        {"$sort": {"has_common_events": 1, "profile.distance": 1, "age_difference": 1, "last_online": 1}, },
         {"$limit": limit},
     ]
 

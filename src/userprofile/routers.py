@@ -19,11 +19,11 @@ router = APIRouter()
 )
 def upsert_profile(profile_data: PrivateUserProfileIn, response: Response, user: CurrentActiveUser):
     if not user.profile:
-        profile = service.create_user_profile(user, profile_data)
+        user = service.create_user_profile(user, profile_data)
         response.status_code = status.HTTP_201_CREATED
     else:
-        profile = service.update_user_profile(user, profile_data)
+        user = service.update_user_profile(user, profile_data)
         response.status_code = status.HTTP_200_OK
 
-    return profile
+    return user
 
