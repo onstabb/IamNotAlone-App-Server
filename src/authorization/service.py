@@ -34,7 +34,6 @@ def create_admin() -> User:
         User(
             phone_number=config.ADMIN_PHONE_NUMBER,
             password=hash_password(password),
-            is_active=False,
             role=UserRole.ADMIN
         )
     )

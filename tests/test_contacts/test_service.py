@@ -29,6 +29,21 @@ def test_get_contacts_for_user(contact_factory):
         raise AssertionError
 
 
+def test_get_likes_for_user(user, contact_factory):
+    contact_factory.create_batch(5, likes=True, respondent=user)
+    contact_factory.create_batch(1, likes=True, initiator=user)
+
+    contacts = service.get_contacts_by_user(
+        user, status=None, respondent=user.id, initiator_state=ContactState.ESTABLISHED
+    )
+
+    for contact_doc in contacts:
+        assert contact_doc.get("initiator") != user.id
+        assert contact_doc.get("initiator_state") == ContactState.ESTABLISHED.value
+        assert contact_doc.get("respondent_state") is None
+        assert contact_doc.get("status") is None
+
+
 def test_get_contact_by_user_pair(contact_factory):
     contact = contact_factory(active_dialog=True)
     current_user, target_user = contact.initiator, contact.respondent

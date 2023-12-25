@@ -22,13 +22,11 @@ def get_current_user_by_token(subject: str = Depends(JWTBearer),) -> User:
     return user
 
 
-def get_current_active_user(user: User = Depends(get_current_user_by_token), set_online: bool = True) -> User:
+def get_current_active_user(user: User = Depends(get_current_user_by_token)) -> User:
     if not user.is_active:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Activation is required")
 
-    if set_online:
-        user.last_online = get_aware_datetime_now()
-
+    user.last_online = get_aware_datetime_now()
     return user
 
 

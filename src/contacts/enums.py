@@ -14,3 +14,9 @@ class ContactUpdateAction(enum.StrEnum):
     REFUSE = "refuse"
     BLOCK = "block"
     SEEN = "seen"
+
+
+@enum.unique
+class ContactType(enum.StrEnum):
+    LIKE = "likes"
+    DIALOG = "dialogs"

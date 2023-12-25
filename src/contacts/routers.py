@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Query
 
 from contacts import config, service
-from contacts.enums import ContactState, ContactUpdateAction
+from contacts.enums import ContactState, ContactUpdateAction, ContactType
 from contacts.models import Contact
 from contacts.schemas import ContactUpdateIn, ContactCreateDataIn, ContactOut, MessageIn, MessageOut
 from notifications.enums import NotificationType
@@ -16,10 +16,15 @@ router = APIRouter()
 @router.get("", response_model=list[ContactOut])
 def get_contacts(
         current_user: CurrentActiveCompletedUser,
-        contact_status: ContactState = Query(alias="status", default=ContactState.ESTABLISHED),
+        contact_type: ContactType = Query(alias="contactType"),
         limit: int = 0,
 ):
-    return service.get_contacts_by_user(current_user, limit=limit, status=contact_status)
+    if contact_type == ContactType.LIKE:
+        return service.get_contacts_by_user(
+            current_user, limit=limit, status=None, initiator_state=ContactState.ESTABLISHED, respondent=current_user.id
+        )
+    # if contact_type == ContactType.DIALOG
+    return service.get_contacts_by_user(current_user, limit=limit, status=ContactState.ESTABLISHED)
 
 
 @router.get("/{user_id}", response_model=ContactOut)
@@ -33,7 +38,7 @@ def get_contact(current_user: CurrentActiveCompletedUser, target_user: TargetAct
 def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveCompletedUser):
     if data_in.user_id == current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="You cannot create contact with yourself",
+            status_code=status.HTTP_403_FORBIDDEN, detail="Cannot create contact with yourself",
         )
 
     target_user = get_active_completed_user(data_in.user_id)
@@ -43,7 +48,7 @@ def create_contact(data_in: ContactCreateDataIn, current_user: CurrentActiveComp
             status_code=status.HTTP_409_CONFLICT, detail=f"Contact with profile `{target_user.id}` already exists"
         )
 
-    contact = service.create_contact_by_initiator(current_user, target_user, data_in)
+    contact = service.create_contact_by_initiator(initiator=current_user, respondent=target_user, data_in=data_in)
     if data_in.state == ContactState.ESTABLISHED:
         notification_manager.put_notification(
             UserPublicOut.model_validate(current_user, from_attributes=True),

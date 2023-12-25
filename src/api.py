@@ -5,7 +5,6 @@ from candidates.routers import router as candidates_router
 from contacts.routers import router as contact_router
 from events.routers import router as event_router
 from events.routers import user_router as user_events_router
-from likes.routers import router as likes_router
 from notifications.routers import router as notifications_router
 from photos.routers import router as photos_router
 from reports.routers import router as reports_router
@@ -23,7 +22,6 @@ authenticated_router: APIRouter = APIRouter(prefix="/users/me", tags=["Users"])
 authenticated_router.include_router(profile_router, tags=["Profile"], prefix="/profile")
 authenticated_router.include_router(photos_router, tags=["Photos"], prefix="/photos")
 authenticated_router.include_router(candidates_router, tags=["Candidates"], prefix="/candidates")
-authenticated_router.include_router(likes_router, tags=["Likes"], prefix="/likes")
 authenticated_router.include_router(contact_router, tags=["Contacts"], prefix="/contacts")
 authenticated_router.include_router(user_events_router, tags=["Events"], prefix="/events")
 authenticated_router.include_router(notifications_router, tags=["Notifications"], prefix="/notifications")
