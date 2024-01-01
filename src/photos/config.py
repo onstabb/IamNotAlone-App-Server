@@ -8,7 +8,7 @@ BUCKET_FILES_LOCAL_PATH: Path = global_config.STATIC_PATH / "bucket"
 if not BUCKET_FILES_LOCAL_PATH.exists():
     BUCKET_FILES_LOCAL_PATH.mkdir()
 
-SERVER_STATIC_IMAGES_URL = f'{global_config.SERVER_URL}/static/images'
+SERVER_STATIC_IMAGES_URL = f'{global_config.SERVER_URL}/static/bucket'
 SUPPORTED_IMAGE_FORMATS = ('jpeg', 'jpg')
 SUPPORTED_IMAGE_MEDIA_TYPES = tuple(f'image/{img_format}' for img_format in SUPPORTED_IMAGE_FORMATS)
 FILE_TOKEN_LENGTH = 24

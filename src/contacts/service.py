@@ -61,6 +61,7 @@ def get_contacts_by_user(user: User, *, limit: int = 0, **filters) -> list[dict]
         {
             "$match": {"opposite_user.is_active": True, "opposite_user.banned": False, },
         },
+        {"$sort": {"messages.created_at": -1, "_id": -1}},
     ]
 
     if limit:

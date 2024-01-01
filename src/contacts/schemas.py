@@ -1,14 +1,15 @@
-from datetime import datetime
-from functools import cached_property
-from typing import Any, Self
+from datetime import datetime, timezone
+from typing import Any, Self, Annotated
 
-from bson import ObjectId
-from pydantic import AliasChoices, BaseModel, Field, constr, computed_field, model_validator
+from pydantic import AliasChoices, BaseModel, Field, constr, model_validator, AfterValidator
 
 from contacts import config
 from contacts.enums import ContactState, ContactUpdateAction
 from models import PydanticObjectId, DateTimeFromObjectId
 from users.schemas import UserPublicOut
+
+
+UtcDatetime = Annotated[datetime, AfterValidator(lambda value: value.astimezone(timezone.utc))]
 
 
 class MessageBase(BaseModel):
@@ -21,18 +22,18 @@ class MessageIn(MessageBase):
 
 class MessageOut(MessageBase):
     sender: PydanticObjectId | UserPublicOut
-    date: datetime = Field(validation_alias="created_at")
+    date: UtcDatetime = Field(validation_alias="created_at")
 
 
 class ContactBaseOut(BaseModel):
     initiator: UserPublicOut | PydanticObjectId = Field(exclude=True)
     respondent: UserPublicOut | PydanticObjectId = Field(exclude=True)
-    initiator_last_update_at: datetime = Field(exclude=True)
-    respondent_last_update_at: datetime | None = Field(exclude=True)
+    initiator_last_update_at: UtcDatetime = Field(exclude=True)
+    respondent_last_update_at: UtcDatetime | None = Field(exclude=True)
 
     opposite_user: UserPublicOut | None = None
-    opposite_user_last_update_at: datetime | None = None
-    last_update_at: datetime | None = None
+    opposite_user_last_update_at: UtcDatetime | None = None
+    last_update_at: UtcDatetime | None = None
     created_at: DateTimeFromObjectId = Field(validation_alias=AliasChoices("_id", "id"),)
 
     @model_validator(mode="after")

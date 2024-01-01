@@ -18,5 +18,5 @@ class ContactUpdateAction(enum.StrEnum):
 
 @enum.unique
 class ContactType(enum.StrEnum):
-    LIKE = "likes"
-    DIALOG = "dialogs"
+    LIKE = "like"
+    DIALOG = "dialog"
