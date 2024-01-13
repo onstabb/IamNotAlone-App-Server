@@ -13,12 +13,31 @@ def get_events_by_city_id(city_id: int, **filters) -> list[Event]:
     return list(result)
 
 
+def get_events_by_user(user: User, *, only_future: bool) -> list[Event]:
+    if not only_future:
+        return user.events
+
+    return [event for event in user.events if event.start_at < get_aware_datetime_now()]
+
+
 def accept_subscriber(event: Event, user: User) -> Event:
     if event not in user.events:
         user.events.append(event)
 
     if user not in event.subscribers:
         event.subscribers.append(user)
+
+    user.save()
+    event.save()
+    return event
+
+
+def remove_subscriber(event: Event, user: User) -> Event:
+    if event in user.events:
+        user.events.remove(event)
+
+    if user in event.subscribers:
+        event.subscribers.remove(event)
 
     user.save()
     event.save()

@@ -4,6 +4,7 @@ import factory
 from factory import fuzzy
 
 from contacts.models import Contact, Message, ContactState
+from datehelpers import get_aware_datetime_now
 from events.models import Event
 from location.database import geonames_db
 from reports.enums import ReportType
@@ -124,6 +125,10 @@ class EventFactory(_UsingLocationFactory):
         self.subscribers.extend(users)
         self.save()
 
+    class Params:
+        future = factory.Trait(
+            start_at=get_aware_datetime_now(delta_days=25)
+        )
 
 class ReportFactory(_BaseMongoEngineFactory):
     class Meta:

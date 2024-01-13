@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Query
 
-from datehelpers import get_aware_datetime_now
+
 from events import service
 from events.schemas import EventOut
 from models import PydanticObjectId
@@ -12,7 +12,7 @@ user_router = APIRouter()
 
 
 @router.get("", response_model=list[EventOut])
-def get_events(city_id: int, only_future: bool = Query(alias="onlyFuture", default=True)):
+def get_events(city_id: int = Query(alias="cityId"), only_future: bool = Query(alias="onlyFuture", default=True)):
     return service.get_events_by_city_id(city_id, only_future=only_future)
 
 
@@ -29,5 +29,10 @@ def accept_subscriber(event_id: PydanticObjectId, current_user: CurrentActiveCom
 
 
 @user_router.get("", response_model=list[EventOut])
-def get_my_actual_events(current_user: CurrentActiveCompletedUser):
-    return [event for event in current_user.events if event.start_at < get_aware_datetime_now()]
+def get_my_actual_events(
+        current_user: CurrentActiveCompletedUser,
+        only_future: bool = Query(alias="onlyFuture", default=True)
+):
+    return service.get_events_by_user(current_user, only_future=only_future)
+
+
